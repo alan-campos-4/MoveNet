@@ -1,0 +1,31 @@
+
+
+###### Capture video (bash terminal) ######
+
+gst-launch-1.0 nvarguscamerasrc sensor-id=0 ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvvidconv ! nvegltransform ! nveglglessink
+gst-launch-1.0 nvarguscamerasrc ! nvvidconv ! videoconvert ! xvimagesink
+nvgstcapture-1.0 -m 2 --prev-res 4
+
+
+
+###### Capture video (python) ######
+export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0
+python main.py
+
+
+
+###### Virtual environment ######
+-- sudo apt install python3-opencv
+-- python3 -m venv venv --system-site-packages
+-- source venv/bin/activate
+- print(cv2.getBuildInformation())
+> GStreamer:	YES (1.16.2)
+-- pip install numpy
+-- pip install tensorflow
+-- sudo nano /usr/lib/python3/dist-packages/scipy/sparse/sputils.py
+	Replace typeDict with sctypeDict
+
+
+
+
+
