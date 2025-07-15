@@ -1,0 +1,25 @@
+import cv2
+
+gst_left = 'nvarguscamerasrc sensor-id=0 ! ... ! appsink'
+gst_right = 'nvarguscamerasrc sensor-id=1 ! ... ! appsink'
+
+capL = cv2.VideoCapture(gst_left, cv2.CAP_GSTREAMER)
+capR = cv2.VideoCapture(gst_right, cv2.CAP_GSTREAMER)
+
+counter = 0
+while True:
+    retL, frameL = capL.read()
+    retR, frameR = capR.read()
+
+    cv2.imshow("Left", frameL)
+    cv2.imshow("Right", frameR)
+
+    key = cv2.waitKey(1)
+    if key == ord('c'):  # capture
+        cv2.imwrite(f"calib/left_{counter}.png", frameL)
+        cv2.imwrite(f"calib/right_{counter}.png", frameR)
+        counter += 1
+        print("Captured image pair", counter)
+
+    elif key == ord('q'):
+        break
