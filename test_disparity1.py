@@ -5,18 +5,20 @@ from pipeline import gstreamer_pipeline
 
 
 
-stereo = cv.StereoBM_create(numDisparities=16, blockSize=15)
-"""stereo = cv.StereoSGBM_create(
+block_size=15
+
+stereo = cv.StereoSGBM_create(
 	minDisparity=0,
-	numDisparities=64,
-	blockSize=7,
-	P1=8*3*7**2,
-	P2=32*3*7**2,
+	numDisparities=16*6,
+	blockSize=block_size,
+	P1=8 * 1 * block_size ** 2,
+	P2=32 * 1 * block_size ** 2,
 	disp12MaxDiff=1,
 	uniquenessRatio=10,
-	speckleWindowSize=100,
-	speckleRange=32,
-)"""
+	speckleWindowSize=80,
+	speckleRange=10
+)
+
 
 
 if __name__ == '__main__':
@@ -37,15 +39,15 @@ if __name__ == '__main__':
         if not ret0 or not ret1:
             print("Error: couldn't read frame.")
             break
-        
+
         grayL = cv.cvtColor(frame0, cv.COLOR_BGR2GRAY)
         grayR = cv.cvtColor(frame1, cv.COLOR_BGR2GRAY)
-        
+
         disparity = stereo.compute(grayL, grayR).astype(np.float32) / 16.0
         disp_norm = cv.normalize(disparity, None, 0, 255, cv.NORM_MINMAX)
         disp_norm = np.uint8(disp_norm)
 
-        cv.imshow('Disparity Map', disp_norm)
+        cv.imshow('Disparity Map', disparity)
 
         if cv.waitKey(1) & 0xFF==ord('q'):
             break
