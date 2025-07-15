@@ -1,16 +1,7 @@
 import cv2
 import numpy as np
+from pipeline import gstreamer_pipeline
 
-def gstreamer_pipeline(sensor_id):
-    return (
-        f"nvarguscamerasrc sensor-id={sensor_id} ! "
-        "video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1 ! "
-        "nvvidconv flip-method=0 ! "
-        "video/x-raw, format=BGRx ! "
-        "videoconvert ! "
-        "video/x-raw, format=BGR ! "
-        "appsink max-buffers=1 drop=true"
-    )
 
 # Open both cameras
 cap0 = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
@@ -36,7 +27,7 @@ while True:
     frame1 = cv2.resize(frame1, (960, 540))
 
     # Combine the frames horizontally
-    combined = np.hstack((frame1, frame0))
+    combined = np.hstack((frame0, frame1))
 
     # Show in one window
     cv2.imshow("Combined Camera View", combined)
