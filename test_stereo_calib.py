@@ -9,15 +9,11 @@ from pipeline import gstreamer_pipeline
 
 
 # Load calibration parameters
-data = np.load("stereo_params.npz")
+data = np.load("stereo_params_2.npz")
 mapLx = data["mapLx"]
 mapLy = data["mapLy"]
 mapRx = data["mapRx"]
 mapRy = data["mapRy"]
-
-data = np.load("stereo_params_1.npz")
-for key in data.files:
-    print(f"{key}: {data[key].shape}")
 
 
 
