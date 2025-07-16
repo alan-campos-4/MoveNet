@@ -3,15 +3,15 @@ import cv2
 import numpy as np
 import glob
 
+
+
 # Chessboard settings
 chessboard_size = (9, 6)  # inner corners (10x7 squares → 9x6)
 square_size = 0.025       # square size in meters
 
 # Termination criteria
-criteria_subpix = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
-                   30, 0.001)
-criteria_stereo = (cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS,
-                   100, 1e-5)
+criteria_subpix = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+criteria_stereo = (cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS, 100, 1e-5)
 
 # Flags for corner detection
 cb_flags = cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE
@@ -96,9 +96,9 @@ map1_r, map2_r = cv2.initUndistortRectifyMap(
 )
 
 # Save all parameters
-os.makedirs("calib", exist_ok=True)
+os.makedirs("calibration", exist_ok=True)
 np.savez(
-    "calib/stereo_params.npz",
+    "calibration/stereo_params_3.npz",
     mtxL=mtxL, distL=distL,
     mtxR=mtxR, distR=distR,
     R1=R1, R2=R2, P1=P1, P2=P2,
@@ -106,4 +106,4 @@ np.savez(
     map1_r=map1_r, map2_r=map2_r,
     Q=Q
 )
-print("Calibration data saved to calib/stereo_params.npz")
+print("Calibration data saved to calibration/stereo_params.npz")

@@ -7,9 +7,8 @@ chessboard_size = (9, 6)
 square_size = 0.025  # 2.5cm per square (adjust as needed)
 
 # Termination criteria
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-criteria_stereo = (cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS, 100, 1e-5)
+criteria		= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+criteria_stereo	= (cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS, 100, 1e-5)
 
 # Prepare object points
 objp = np.zeros((chessboard_size[0]*chessboard_size[1], 3), np.float32)
@@ -17,7 +16,7 @@ objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1,
 objp *= square_size
 
 # Arrays for points
-objpoints = []
+objpoints =  []
 imgpointsL = []
 imgpointsR = []
 
@@ -31,7 +30,7 @@ for imgL_path, imgR_path in zip(imagesL, imagesR):
     if imgL is None or imgR is None:
         print("Error: Could not open or find the images!")
         continue
-    
+
     print(f"New images. L:{imgL_path},{imgL.shape} | R:{imgR_path},{imgR.shape}")
 
     retL, cornersL = cv2.findChessboardCorners(imgL, chessboard_size, None)
@@ -53,11 +52,11 @@ for imgL_path, imgR_path in zip(imagesL, imagesR):
         
         cv2.imwrite(f"output/cornered_{imgL_path.split('/')[-1]}", imgL)
         cv2.imwrite(f"output/cornered_{imgR_path.split('/')[-1]}", imgR)
-        
+
         cv2.imshow('Left', imgL)
         cv2.imshow('Right', imgR)
         cv2.waitKey(100)  # Display each pair for a short time
-    
+
     print("Object points length: ", len(objpoints))
     print("Number of left images:  ", len(imgpointsL))
     print("Number of right images: ", len(imgpointsR))

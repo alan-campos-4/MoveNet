@@ -9,26 +9,22 @@ from pipeline import gstreamer_pipeline
 
 
 # Load calibration parameters
-data = np.load("stereo_params_2.npz")
-mapLx = data["mapLx"]
-mapLy = data["mapLy"]
-mapRx = data["mapRx"]
-mapRy = data["mapRy"]
+data = np.load("stereo_params_blur.npz")
+map1_l = data["map1_l"]
+map2_l = data["map2_l"]
+map1_r = data["map1_r"]
+map2_r = data["map2_r"]
 
 
 
 
-
-
-calib_Lheight, calib_Lwidth = mapLx.shape
-calib_Rheight, calib_Rwidth = mapRx.shape
 
 
 if __name__ == '__main__':
 
     # Open both cameras
-    cap0 = cv2.VideoCapture(gstreamer_pipeline(0, calib_Lwidth, calib_Lheight), cv2.CAP_GSTREAMER)
-    cap1 = cv2.VideoCapture(gstreamer_pipeline(1, calib_Rwidth, calib_Rheight), cv2.CAP_GSTREAMER)
+    cap0 = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
+    cap1 = cv2.VideoCapture(gstreamer_pipeline(1), cv2.CAP_GSTREAMER)
 
     if not cap0.isOpened():
         print("Error: Could not open camera 0")
@@ -46,8 +42,8 @@ if __name__ == '__main__':
             break
 
         # Rectify both frames and resize
-        rectifiedL = cv2.remap(frame0, mapLx, mapLy, cv2.INTER_LINEAR)
-        rectifiedR = cv2.remap(frame1, mapRx, mapRy, cv2.INTER_LINEAR)
+        rectifiedL = cv2.remap(frame0, map1_l, map2_l, cv2.INTER_LINEAR)
+        rectifiedR = cv2.remap(frame1, map1_r, map2_r, cv2.INTER_LINEAR)
         displayL = cv2.resize(rectifiedL, (640, 360))
         displayR = cv2.resize(rectifiedR, (640, 360))
 

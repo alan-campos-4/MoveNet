@@ -14,11 +14,7 @@ criteria_subpix = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001
 criteria_stereo = (cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS, 100, 1e-5)
 
 # Flags to improve corner detection
-find_flags = (
-    cv2.CALIB_CB_ADAPTIVE_THRESH |
-    cv2.CALIB_CB_NORMALIZE_IMAGE |
-    cv2.CALIB_CB_FAST_CHECK
-)
+find_flags = (cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE | cv2.CALIB_CB_FAST_CHECK)
 
 # Prepare object points grid
 objp = np.zeros((chessboard_size[1] * chessboard_size[0], 3), np.float32)
@@ -63,7 +59,8 @@ for idx, (fL, fR) in enumerate(zip(targetL, targetR)):
     if not (retL and retR):
         continue
 
-    # Refine corner positions\ n    cornersL = cv2.cornerSubPix(grayL, cornersL, (11, 11), (-1, -1), criteria_subpix)
+    # Refine corner positions\
+    cornersL = cv2.cornerSubPix(grayL, cornersL, (11, 11), (-1, -1), criteria_subpix)
     cornersR = cv2.cornerSubPix(grayR, cornersR, (11, 11), (-1, -1), criteria_subpix)
 
     # Append for calibration
@@ -108,9 +105,9 @@ map1_l, map2_l = cv2.initUndistortRectifyMap(mtxL, distL, R1, P1, (w, h), cv2.CV
 map1_r, map2_r = cv2.initUndistortRectifyMap(mtxR, distR, R2, P2, (w, h), cv2.CV_16SC2)
 
 # Save parameters
-os.makedirs("calib", exist_ok=True)
+os.makedirs("calibration", exist_ok=True)
 np.savez(
-    "calib/stereo_params.npz",
+    "calibration/stereo_params_4.npz",
     mtxL=mtxL, distL=distL,
     mtxR=mtxR, distR=distR,
     R1=R1, R2=R2, P1=P1, P2=P2,

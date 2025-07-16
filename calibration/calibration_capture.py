@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 from pipeline import gstreamer_pipeline 
 
 os.makedirs("captures", exist_ok=True)
@@ -12,9 +13,12 @@ counter = 0
 while True:
     retL, frameL = capL.read()
     retR, frameR = capR.read()
+    frameL = cv2.resize(frameL, (640, 360))
+    frameR = cv2.resize(frameR, (640, 360))
 
-    cv2.imshow("Left", frameL)
-    cv2.imshow("Right", frameR)
+    combined = np.hstack((frameL, frameR))
+    
+    cv2.imshow("Capture", combined)
 
     key = cv2.waitKey(1)
     if key == ord('c'):  # capture
