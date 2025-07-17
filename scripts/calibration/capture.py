@@ -16,8 +16,8 @@ counter = 0
 while True:
     retL, frameL = capL.read()
     retR, frameR = capR.read()
-    frameL = cv2.resize(frameL, (640, 360))
-    frameR = cv2.resize(frameR, (640, 360))
+    if not (retL and retR):
+        continue
 
     combined = np.hstack((frameL, frameR))
 

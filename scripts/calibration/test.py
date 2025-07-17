@@ -8,8 +8,18 @@ from matplotlib import pyplot as plt
 
 
 
-# Load calibration parameters
-data = np.load("params/stereo_params_blur.npz")
+# Load calibration parameters, from argument if possible
+if len(sys.argv)==2:
+	if os.path.exists("params/"+sys.argv[1]+".npz"):
+		print("File found")
+		data = np.load("params/"+sys.argv[1]+".npz")
+	else:
+		print("File not found")
+		data = np.load("params/stereo_params_4.npz")
+else:
+	print("Using default")
+	data = np.load("params/stereo_params_4.npz")
+
 map1_l = data["map1_l"]
 map2_l = data["map2_l"]
 map1_r = data["map1_r"]
@@ -44,9 +54,14 @@ if __name__ == '__main__':
         rectifiedR = cv2.remap(frame1, map1_r, map2_r, cv2.INTER_LINEAR)
         displayL = cv2.resize(rectifiedL, (640, 360))
         displayR = cv2.resize(rectifiedR, (640, 360))
+        
+        h,w = displayL.shape[:2]
+        cx, cy = w//2, h//2
+        roiL = displayL[:, cx - 160:cx + 160]
+        roiR = displayR[:, cx - 160:cx + 160]
 
         # Combine the frames horizontally
-        combined = np.hstack((rectifiedL, rectifiedR))
+        combined = np.hstack((roiL, roiR))
 
         # Show in one window
         cv2.imshow("Calibrated Cameras", combined)

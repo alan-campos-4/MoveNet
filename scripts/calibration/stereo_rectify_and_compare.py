@@ -42,7 +42,7 @@ while True:
     rectR = cv2.remap(frameR, map1_r, map2_r, cv2.INTER_LINEAR)
 
     # Display top row: undistort, bottom row: rectify
-    top =		cv2.hconcat([undistL, undistR])
+    top =	cv2.hconcat([undistL, undistR])
     bottom =	cv2.hconcat([rectL, rectR])
     combined =	cv2.vconcat([top, bottom])
 

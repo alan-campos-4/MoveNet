@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 
 # Load stereo calibration parameters
-data = np.load("stereo_params.npz")
-mapLx = data["mapLx"]
-mapLy = data["mapLy"]
-mapRx = data["mapRx"]
-mapRy = data["mapRy"]
+data = np.load("params/stereo_params_4.npz")
+map1_l = data["map1_l"]
+map2_l = data["map2_l"]
+map1_r = data["map1_r"]
+map2_r = data["map2_r"]
 
 # Open left and right CSI cameras via GStreamer
 gst_left = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=1280, height=720, format=NV12, framerate=30/1 ! nvvidconv ! video/x-raw, format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
@@ -28,8 +28,8 @@ while True:
         break
 
     # Rectify both frames
-    rectifiedL = cv2.remap(frameL, mapLx, mapLy, cv2.INTER_LINEAR)
-    rectifiedR = cv2.remap(frameR, mapRx, mapRy, cv2.INTER_LINEAR)
+    rectifiedL = cv2.remap(frameL, map1_l, map2_l, cv2.INTER_LINEAR)
+    rectifiedR = cv2.remap(frameR, map1_r, map2_r, cv2.INTER_LINEAR)
 
     # Optional: Resize for display
     displayL = cv2.resize(rectifiedL, (640, 360))

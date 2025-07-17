@@ -101,8 +101,8 @@ print(f"Stereo RMS={retS:.3f}")
 R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(
     mtxL, distL, mtxR, distR, (w, h), R, T, alpha=0, flags=cv2.CALIB_ZERO_DISPARITY
 )
-map1_l, map2_l = cv2.initUndistortRectifyMap(mtxL, distL, R1, P1, (w, h), cv2.CV_16SC2)
-map1_r, map2_r = cv2.initUndistortRectifyMap(mtxR, distR, R2, P2, (w, h), cv2.CV_16SC2)
+map1_l, map2_l = cv2.initUndistortRectifyMap(mtxL, distL, R1, P1, (w, h), cv2.CV_32FC1)
+map1_r, map2_r = cv2.initUndistortRectifyMap(mtxR, distR, R2, P2, (w, h), cv2.CV_32FC1)
 
 # Save parameters
 os.makedirs("params", exist_ok=True)
