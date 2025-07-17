@@ -9,7 +9,7 @@ from pipeline import gstreamer_pipeline
 
 block_size=15
 
-stereo = cv.StereoSGBM_create(
+stereo = cv2.StereoSGBM_create(
 	minDisparity=0,
 	numDisparities=16*6,
 	blockSize=block_size,
@@ -17,8 +17,8 @@ stereo = cv.StereoSGBM_create(
 	P2=32 * 1 * block_size ** 2,
 	disp12MaxDiff=1,
 	uniquenessRatio=10,
-	speckleWindowSize=80,
-	speckleRange=10
+	speckleWindowSize=100,
+	speckleRange=32
 )
 
 

@@ -66,7 +66,7 @@ def save_load_map_settings(current_save, current_load, variable_mapping):
         f = open (str(fName), 'w')
         f.write(result)
         f.close()
-        print ('Settings saved to file '+fName)
+        print('Settings saved to file '+fName)
 
 
     if current_load != 0:
@@ -148,7 +148,7 @@ if __name__ == '__main__':
             left_gray_frame = cv2.cvtColor(left_frame, cv2.COLOR_BGR2GRAY)
             right_gray_frame = cv2.cvtColor(right_frame, cv2.COLOR_BGR2GRAY)
 
-            calibration = StereoCalibration(input_folder='../calib_result')
+            calibration = StereoCalibration(input_folder='img/calib')
             rectified_pair = calibration.rectify((left_gray_frame, right_gray_frame))
 
             #getting trackbar position and assigning to the variables
@@ -159,8 +159,7 @@ if __name__ == '__main__':
                         if current_value < 5:
                             current_value = 5
                         if current_value % 2 == 0:
-                            current_value += 1
-                    
+                            current_value += 1  
                     if v == "NumofDisp":
                         if current_value == 0:
                             current_value = 1
@@ -174,9 +173,7 @@ if __name__ == '__main__':
                     variable_mapping[v] = current_value
 
 
-            
-           #getting save and load trackbar positions
-
+            #getting save and load trackbar positions
             current_save = cv2.getTrackbarPos("Save Settings", "Stereo")
             current_load = cv2.getTrackbarPos("Load Settings", "Stereo")
  
