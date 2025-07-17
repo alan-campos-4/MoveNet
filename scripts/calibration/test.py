@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 
 
 # Load calibration parameters
-data = np.load("params/stereo_params_4.npz")
+data = np.load("params/stereo_params_blur.npz")
 map1_l = data["map1_l"]
 map2_l = data["map2_l"]
 map1_r = data["map1_r"]
@@ -49,8 +49,8 @@ if __name__ == '__main__':
         combined = np.hstack((rectifiedL, rectifiedR))
 
         # Show in one window
-        cv2.imshow("Combined MoveNet Thunder", combined)
-        
+        cv2.imshow("Calibrated Cameras", combined)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

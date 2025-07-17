@@ -20,7 +20,7 @@ while True:
     frameR = cv2.resize(frameR, (640, 360))
 
     combined = np.hstack((frameL, frameR))
-    
+
     cv2.imshow("Capture", combined)
 
     key = cv2.waitKey(1)
@@ -31,3 +31,4 @@ while True:
         print("Captured image pair", counter)
     elif key == ord('q'):
         break
+

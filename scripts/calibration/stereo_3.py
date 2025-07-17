@@ -27,7 +27,7 @@ imgpointsL = []
 imgpointsR = []
 
 # Create debug output folder
-os.makedirs("output", exist_ok=True)
+os.makedirs("img/output", exist_ok=True)
 
 # Load image file names
 imagesL = sorted(glob.glob("img/captures/left_*.png"))
