@@ -1,0 +1,1 @@
+gst-launch-1.0 nvarguscamerasrc sensor-id=0 ! 'video/x-raw(memory:NVMM),width=3264, height=2464, framerate=30/1, format=NV12' ! nvvidconv ! 'video/x-raw(memory:NVMM), format=(string)NV12, width=1920, height=1080' ! nvoverlaysink -ev
