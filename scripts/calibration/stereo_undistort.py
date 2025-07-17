@@ -90,10 +90,11 @@ retR, mtxR, distR, _, _ = cv2.calibrateCamera(objpoints, imgpointsR, (w, h), Non
 print(f"Mono RMS left={retL:.3f}, right={retR:.3f}")
 
 # Stereo calibration
-retS, K1, K2, D1, D2, R, T, E, F = cv2.stereoCalibrate(
+retS, K1, D1, K2, D2, R, T, E, F = cv2.stereoCalibrate(
     objpoints, imgpointsL, imgpointsR,
     mtxL, distL, mtxR, distR,
-    (w, h), criteria=criteria_stereo, flags=cv2.CALIB_FIX_INTRINSIC
+    (w, h), criteria=criteria_stereo, 
+    flags=cv2.CALIB_FIX_INTRINSIC
 )
 print(f"Stereo RMS={retS:.3f}")
 
@@ -107,6 +108,6 @@ map1_r, map2_r = cv2.initUndistortRectifyMap(mtxR, distR, R2, P2, (w, h), cv2.CV
 # Save parameters
 os.makedirs("params", exist_ok=True)
 np.savez(
-    "params/stereo_params_undistort.npz", K1=K1, K2=K2, D1=D1, D2=D2, R=R, T=T
+    "params/stereo_params_undistort.npz", K1=K1, D1=D1, K2=K2, D2=D2, R=R, T=T
 )
 print("Calibration data successfully saved.")

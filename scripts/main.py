@@ -1,11 +1,12 @@
 import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'# turns off different numerical values due to rounding errors
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # enables more tf instructions in operations
+import sys
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # turns off different numerical values due to rounding errors
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # enables more tf instructions in operations
+sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
+from pipeline import gstreamer_pipeline
 import cv2
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
-from pipeline import gstreamer_pipeline
 
 
 
@@ -72,7 +73,7 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
 if __name__ == '__main__':
 
     # Loads the model from the file.
-    interpreter = tf.lite.Interpreter(model_path='movenet-thunder.tflite')
+    interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
     interpreter.allocate_tensors()
 
     # Reads the camera and captures the video.

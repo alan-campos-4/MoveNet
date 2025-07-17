@@ -11,27 +11,12 @@ data = np.load("params/stereo_params_undistort.npz")
 
 # Extract intrinsics and extrinsics
 K1 = data['K1']  # Camera 1 intrinsic matrix
-K2 = data['K2']  # Camera 2 intrinsic matrix
 D1 = data['D1']  # Camera 1 distortion coefficients
+K2 = data['K2']  # Camera 2 intrinsic matrix
 D2 = data['D2']  # Camera 2 distortion coefficients
 R =  data['R']   # Rotation matrix between cameras
 T =  data['T']   # Translation vector between cameras
 
-
-D1 = D1.reshape((1, 5))
-D2 = D2.reshape((1, 5))
-print(f"K1 shape: {K1.shape}, D1 shape: {D1.shape}")
-print(f"K2 shape: {K2.shape}, D2 shape: {D2.shape}")
-print(f"D1: {D1}")
-print(f"D2: {D2}")
-
-"""
-Traceback (most recent call last):
-  File "scripts/calibration/test_undistort.py", line 50, in <module>
-    frame1_undistorted = cv2.undistort(frame1, K1, D1)
-cv2.error: OpenCV(4.2.0) ../modules/calib3d/src/undistort.dispatch.cpp:133: error: (-215:Assertion failed) distCoeffs.size() == Size(1, 4) || distCoeffs.size() == Size(4, 1) || distCoeffs.size() == Size(1, 5) || distCoeffs.size() == Size(5, 1) || distCoeffs.size() == Size(1, 8) || distCoeffs.size() == Size(8, 1) || distCoeffs.size() == Size(1, 12) || distCoeffs.size() == Size(12, 1) || distCoeffs.size() == Size(1, 14) || distCoeffs.size() == Size(14, 1) in function 'initUndistortRectifyMap'
-
-"""
 
 
 
@@ -61,10 +46,6 @@ while True:
     cv2.imshow('Camera 1', frame1_undistorted)
     cv2.imshow('Camera 2', frame2_undistorted)
 
-    # Write the frames to the output video
-    out1.write(frame1_undistorted)
-    out2.write(frame2_undistorted)
-
     # Break the loop on 'q' key press
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -72,8 +53,6 @@ while True:
 # Release everything if job is finished
 cap1.release()
 cap2.release()
-out1.release()
-out2.release()
 cv2.destroyAllWindows()
 
 

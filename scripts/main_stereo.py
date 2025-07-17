@@ -1,11 +1,12 @@
 import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'# turns off different numerical values due to rounding errors
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # enables more tf instructions in operations
+import sys
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # turns off different numerical values due to rounding errors
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # enables more tf instructions in operations
+sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
+from pipeline import gstreamer_pipeline
 import cv2
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
-from pipeline import gstreamer_pipeline
 
 
 
@@ -71,8 +72,16 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
 if __name__ == '__main__':
 
     # Loads the model from the file.
-    interpreter = tf.lite.Interpreter(model_path='movenet-thunder.tflite')
+    interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
     interpreter.allocate_tensors()
+    
+    data = np.load("params/stereo_params_undistort.npz")
+    K1 = data['K1']  # Camera 1 intrinsic matrix
+    D1 = data['D1']  # Camera 1 distortion coefficients
+    K2 = data['K2']  # Camera 2 intrinsic matrix
+    D2 = data['D2']  # Camera 2 distortion coefficients
+    R =  data['R']   # Rotation matrix between cameras
+    T =  data['T']   # Translation vector between cameras
 
     # Open both cameras
     cap0 = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
@@ -92,10 +101,13 @@ if __name__ == '__main__':
         if not ret0 or not ret1:
             print("Error: Could not read from one or both cameras.")
             break
+            
+        frame0_ud = cv2.undistort(frame0, K1, D1)
+        frame1_ud = cv2.undistort(frame1, K2, D2)
     
         # Reshape image
-        img0 = frame0.copy()
-        img1 = frame1.copy()
+        img0 = frame0_ud.copy()
+        img1 = frame1_ud.copy()
         img0 = tf.image.resize_with_pad(np.expand_dims(img0, axis=0), 256, 256)
         img1 = tf.image.resize_with_pad(np.expand_dims(img1, axis=0), 256, 256)
         input_image_0 = tf.cast(img0, dtype=tf.float32)
@@ -115,17 +127,17 @@ if __name__ == '__main__':
         keypoints_with_scores_1 = interpreter.get_tensor(output_details_1[0]['index'])
 
         # Rendering and showing the image
-        draw_connections(frame0, keypoints_with_scores_0, EDGES, 0.4)
-        draw_connections(frame1, keypoints_with_scores_1, EDGES, 0.4)
-        draw_keypoints(frame0, keypoints_with_scores_0, 0.4)
-        draw_keypoints(frame1, keypoints_with_scores_1, 0.4)
+        draw_connections(frame0_ud, keypoints_with_scores_0, EDGES, 0.4)
+        draw_connections(frame1_ud, keypoints_with_scores_1, EDGES, 0.4)
+        draw_keypoints(frame0_ud, keypoints_with_scores_0, 0.4)
+        draw_keypoints(frame1_ud, keypoints_with_scores_1, 0.4)
 
         # Optional: resize for display if needed
-        frame0 = cv2.resize(frame0, (960, 540))
-        frame1 = cv2.resize(frame1, (960, 540))
+        frame0_ud = cv2.resize(frame0_ud, (960, 540))
+        frame1_ud = cv2.resize(frame1_ud, (960, 540))
 
         # Combine the frames horizontally
-        combined = np.hstack((frame1, frame0))
+        combined = np.hstack((frame0_ud, frame1_ud))
 
         # Show in one window
         cv2.imshow("Combined MoveNet Thunder", combined)
