@@ -84,8 +84,11 @@ if __name__ == '__main__':
     T =  data['T']   # Translation vector between cameras
 
     # Open both cameras
-    cap0 = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
-    cap1 = cv2.VideoCapture(gstreamer_pipeline(1), cv2.CAP_GSTREAMER)
+    width=640
+    height=360
+    cap0 = cv2.VideoCapture(gstreamer_pipeline(0, width, height), cv2.CAP_GSTREAMER)
+    cap1 = cv2.VideoCapture(gstreamer_pipeline(1, width, height), cv2.CAP_GSTREAMER)
+    img = np.zeros((height, width, 3), np.uint8)
 
     if not cap0.isOpened():
         print("Error: Could not open camera 0")
@@ -128,7 +131,26 @@ if __name__ == '__main__':
         
         #Average of the keypoints
         
-
+        print("\n------")
+        print(" L: ")
+        print(keypoints_with_scores_0)
+        print(" R: ")
+        print(keypoints_with_scores_1)
+        
+        keypoints_with_scores_avg = []
+        
+        for block0, block1 in zip(keypoints_with_scores_0, keypoints_with_scores_1):
+            print("Block")
+            for col0, col1 in zip(block0, block1):
+                print(" Column")
+                for row0, row1 in zip(col0, col1):
+                    print("  Row")
+                    for num0, num1 in zip(row0, row1):
+                        new_num = (num0 + num1)/2
+                        print("   Average =",new_num)
+        
+        break
+        """
         # Rendering and showing the image
         draw_connections(frame0_ud, keypoints_with_scores_0, EDGES, 0.4)
         draw_connections(frame1_ud, keypoints_with_scores_1, EDGES, 0.4)
@@ -144,7 +166,7 @@ if __name__ == '__main__':
 
         # Show in one window
         cv2.imshow("Combined MoveNet Thunder", combined)
-
+        """
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

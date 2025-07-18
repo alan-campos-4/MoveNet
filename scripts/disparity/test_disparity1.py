@@ -6,10 +6,8 @@ sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline
 
 
-
 block_size=15
-
-stereo = cv2.StereoSGBM_create(
+stereo = cv.StereoSGBM_create(
 	minDisparity=0,
 	numDisparities=16*6,
 	blockSize=block_size,
@@ -57,4 +55,3 @@ if __name__ == '__main__':
     cap0.release()
     cap1.release()
     cv.destroyAllWindows()
-

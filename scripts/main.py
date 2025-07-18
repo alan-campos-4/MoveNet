@@ -112,7 +112,6 @@ if __name__ == '__main__':
         # Display the result 
         cv2.imshow('Movenet Thunder', frame)
 
-
         # Break the loop if the 'Q' key is pressed
         if cv2.waitKey(10) & 0xFF==ord('q'):
             break
