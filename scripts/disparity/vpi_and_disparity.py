@@ -38,13 +38,14 @@ while True:
     frame_l_rect = cv2.resize(frame_l_rect, (480, 270))
     frame_r_rect = cv2.resize(frame_r_rect, (480, 270))
 
+    gray_l = cv2.cvtColor(frame_l_rect, cv2.COLOR_BGR2GRAY)
+    gray_r = cv2.cvtColor(frame_r_rect, cv2.COLOR_BGR2GRAY)
     # Run VPI backend on CUDA for performance
     with vpi.Backend.CUDA:
-        gray_l = cv2.cvtColor(frame_l_rect, cv2.COLOR_BGR2GRAY)
-        gray_r = cv2.cvtColor(frame_r_rect, cv2.COLOR_BGR2GRAY)
+
         # Convert OpenCV images to VPI images in 16-bit format
-        vpi_l = vpi.asimage(frame_l_rect).convert(vpi.Format.U16, scale=1)
-        vpi_r = vpi.asimage(frame_r_rect).convert(vpi.Format.U16, scale=1)
+        vpi_l = vpi.asimage(gray_l).convert(vpi.Format.U16, scale=1)
+        vpi_r = vpi.asimage(gray_l).convert(vpi.Format.U16, scale=1)
 
         # Compute disparity map using VPI's stereo disparity function
         disparity_16bpp = vpi.stereodisp(
