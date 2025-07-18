@@ -8,7 +8,7 @@ sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline
 
 
-MAX_DISP = 64
+MAX_DISP = 128
 WINDOW_SIZE	= 10
 
 # Load rectification maps (adjust if using .npz or .npy)
@@ -40,6 +40,8 @@ while True:
 
     # Run VPI backend on CUDA for performance
     with vpi.Backend.CUDA:
+        gray_l = cv2.cvtColor(frame_l_rect, cv2.COLOR_BGR2GRAY)
+        gray_r = cv2.cvtColor(frame_r_rect, cv2.COLOR_BGR2GRAY)
         # Convert OpenCV images to VPI images in 16-bit format
         vpi_l = vpi.asimage(frame_l_rect).convert(vpi.Format.U16, scale=1)
         vpi_r = vpi.asimage(frame_r_rect).convert(vpi.Format.U16, scale=1)
