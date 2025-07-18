@@ -1,9 +1,27 @@
 
 
-Rectification
+###### Pose detection ######
 
-/script/calibration/
+	/scripts/main.py
+performs the most basic form of pose detection using the MoveNet model with TensorFlow on a single camera.
 
+	/scripts/main_stereo.py
+is a modified version that performs pose detection on both cameras simultaneously.
+
+	/scripts/main_stereo_avg.py
+is a modified version that calcultes the average of every keypoint in the pose detection obtained from both cameras
+and draws the edges between them. 
+
+
+
+
+###### Calibration / Rectification ######
+
+	/script/calibration/visualize rectification.py
+that uses the parameters	/params/stereo_params_undistort.npz
+created with the script		/script/calibration/createCalib_undistort.py
+we can see the difference between the rectified and unaltered camera.
+However, the resulting image is cropped on the sides. And the difference is not very noticeable.
 
 
 
