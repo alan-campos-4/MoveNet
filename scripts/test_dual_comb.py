@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import sys
+sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline
 
 

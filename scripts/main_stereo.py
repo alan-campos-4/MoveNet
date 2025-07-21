@@ -133,7 +133,7 @@ if __name__ == '__main__':
         draw_keypoints(frame1_ud, keypoints_with_scores_1, 0.4)
 
         # Optional: resize for display if needed
-        frame0_ud = cv2.resize(frame0_ud, (960, 540))
+        frame0_ud = cv2.resize(frame0_ud, (640, 540))
         frame1_ud = cv2.resize(frame1_ud, (960, 540))
 
         # Combine the frames horizontally
