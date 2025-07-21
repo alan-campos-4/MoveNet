@@ -56,9 +56,9 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
 # Draw the edges between the coordinates
 def draw_connections(frame, keypoints, edges, confidence_threshold):
     y, x, c = frame.shape
-    shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1])) # multiplies the keypoints by the dimesions of the frame
-
-    for edge, color in edges.items(): # for every edge, gets the coordinates of the two points and connects them
+    shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
+    
+    for edge, color in edges.items(): 
         p1, p2 = edge
         y1, x1, c1 = shaped_array[p1]
         y2, x2, c2 = shaped_array[p2]
@@ -177,11 +177,10 @@ if __name__ == '__main__':
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				
-				
 				## Apply MoveNet
-				img = disp_arr.copy()
-				img = tf.image.resize_with_pad(np.expand_dims(img, axis=0), 256, 256)
-				input_image = tf.cast(img, dtype=tf.float32)
+				pose_input = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2RGB)
+				pose_input_resized = tf.image.resize_with_pad(np.expand_dims(pose_input, axis=0), 256, 256)
+				input_image = tf.cast(pose_input_resized, dtype=tf.float32)
 				
 				# Setup input and output
 				input_details = interpreter.get_input_details()
@@ -193,11 +192,11 @@ if __name__ == '__main__':
 				keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
 				
 				# Rendering and showing the image
-				draw_connections(disp_arr, keypoints_with_scores, EDGES, 0.4)
-				draw_keypoints(disp_arr, keypoints_with_scores, 0.4)   
+				draw_img = cv2.cvtColor(pose_input_resized, cv2.COLOR_GRAY2BGR)
+				draw_connections(draw_img, keypoints_with_scores, EDGES, 0.4)
+				draw_keypoints(draw_img, keypoints_with_scores, 0.4)
 				
-				
-				cv2.imshow("MoveNet with Depth", disp_arr)
+				cv2.imshow("MoveNet on Left Image", draw_img)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
@@ -207,13 +206,4 @@ if __name__ == '__main__':
 		cam_l.stop()
 		cam_r.stop()
 		cv2.destroyAllWindows()
-
-
-
-
-
-
-
-
-
 

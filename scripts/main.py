@@ -103,11 +103,10 @@ if __name__ == '__main__':
         interpreter.set_tensor(input_details[0]['index'], np.array(input_image))
         interpreter.invoke()
         keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
-        #print(keypoints_with_scores)
 
         # Rendering and showing the image
         draw_connections(frame, keypoints_with_scores, EDGES, 0.4)
-        draw_keypoints(frame, keypoints_with_scores, 0.4)   
+        draw_keypoints(frame, keypoints_with_scores, 0.4)
 
         # Display the result 
         cv2.imshow('Movenet Thunder', frame)
