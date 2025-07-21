@@ -135,7 +135,6 @@ if __name__ == '__main__':
 	try:
 		with vpi.Backend.CUDA:
 			while True:
-				
 				arr_l = cam_l.image
 				arr_r = cam_r.image
 				for _ in range(5):
@@ -178,25 +177,26 @@ if __name__ == '__main__':
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				
 				## Apply MoveNet
-				pose_input = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2RGB)
-				pose_input_resized = tf.image.resize_with_pad(np.expand_dims(pose_input, axis=0), 256, 256)
-				input_image = tf.cast(pose_input_resized, dtype=tf.float32)
+				disp_arr_resized = tf.image.resize_with_pad(np.expand_dims(disp_arr, axis=0), 256, 256)
+				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32).numpy()
 				
-				# Setup input and output
 				input_details = interpreter.get_input_details()
 				output_details = interpreter.get_output_details()
 				
-				# Make predictions
-				interpreter.set_tensor(input_details[0]['index'], np.array(input_image))
+				interpreter.set_tensor(input_details[0]['index'], disp_resized)
 				interpreter.invoke()
-				keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
+				keypoints = interpreter.get_tensor(output_details[0]['index'])
 				
-				# Rendering and showing the image
-				draw_img = cv2.cvtColor(pose_input_resized, cv2.COLOR_GRAY2BGR)
-				draw_connections(draw_img, keypoints_with_scores, EDGES, 0.4)
-				draw_keypoints(draw_img, keypoints_with_scores, 0.4)
+				draw_img = cv2.cvtColor(disp_resized, cv2.COLOR_GRAY2BGR)
+				draw_connections(draw_img, keypoints, EDGES, 0.4)
+				draw_keypoints(draw_img, keypoints, 0.4)
 				
-				cv2.imshow("MoveNet on Left Image", draw_img)
+				#Show the result
+				h = draw_img.shape[0]
+				w = draw_img.shape[1]
+				draw_img = cv2.resize(draw_img, (w, h))
+				
+				cv2.imshow("Disparity", disp_arr)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
