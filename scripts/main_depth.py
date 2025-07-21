@@ -179,9 +179,9 @@ if __name__ == '__main__':
 				
 				
 				## Apply MoveNet
-				img = disp_arr.copy()
-				img = tf.image.resize_with_pad(np.expand_dims(img, axis=0), 256, 256)
-				input_image = tf.cast(img, dtype=tf.float32)
+				pose_input = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2RGB)
+				pose_input_resized = tf.image.resize_with_pad(np.expand_dims(pose_input, axis=0), 256, 256)
+				input_image = tf.cast(pose_input_resized, dtype=tf.uint8)
 				
 				# Setup input and output
 				input_details = interpreter.get_input_details()
@@ -193,11 +193,12 @@ if __name__ == '__main__':
 				keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
 				
 				# Rendering and showing the image
-				draw_connections(disp_arr, keypoints_with_scores, EDGES, 0.4)
-				draw_keypoints(disp_arr, keypoints_with_scores, 0.4)   
-				
-				
-				cv2.imshow("MoveNet with Depth", disp_arr)
+				draw_img = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
+
+				draw_connections(draw_img, keypoints_with_scores, EDGES, 0.4)
+				draw_keypoints(draw_img, keypoints_with_scores, 0.4)
+
+				cv2.imshow("MoveNet on Left Image", draw_img)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
