@@ -178,25 +178,50 @@ if __name__ == '__main__':
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				
 				## Apply MoveNet
-				pose_input = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2RGB)
-				pose_input_resized = tf.image.resize_with_pad(np.expand_dims(pose_input, axis=0), 256, 256)
-				input_image = tf.cast(pose_input_resized, dtype=tf.float32)
+
+				# Left
+				pose_input_left = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2RGB)
+				pose_input_left_resized = tf.image.resize_with_pad(np.expand_dims(pose_input_left, axis=0), 256, 256)
+				input_left = tf.cast(pose_input_left_resized, dtype=tf.uint8)
+
+				# Right
+				pose_input_right = cv2.cvtColor(arr_r_rect, cv2.COLOR_GRAY2RGB)
+				pose_input_right_resized = tf.image.resize_with_pad(np.expand_dims(pose_input_right, axis=0), 256, 256)
+				input_right = tf.cast(pose_input_right_resized, dtype=tf.uint8)
 				
 				# Setup input and output
 				input_details = interpreter.get_input_details()
 				output_details = interpreter.get_output_details()
 				
-				# Make predictions
-				interpreter.set_tensor(input_details[0]['index'], np.array(input_image))
+				# Make predictions for left
+				interpreter.set_tensor(input_details[0]['index'], input_left)
 				interpreter.invoke()
-				keypoints_with_scores = interpreter.get_tensor(output_details[0]['index'])
-				
+				keypoints_left = interpreter.get_tensor(output_details[0]['index'])
+
+				# Make predictions for left
+				interpreter.set_tensor(input_details[0]['index'], input_right)
+				interpreter.invoke()
+				keypoints_right = interpreter.get_tensor(output_details[0]['index'])
+
 				# Rendering and showing the image
-				draw_img = cv2.cvtColor(pose_input_resized, cv2.COLOR_GRAY2BGR)
-				draw_connections(draw_img, keypoints_with_scores, EDGES, 0.4)
-				draw_keypoints(draw_img, keypoints_with_scores, 0.4)
+				draw_img_l = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
+				draw_img_r = cv2.cvtColor(arr_r_rect, cv2.COLOR_GRAY2BGR)
 				
-				cv2.imshow("MoveNet on Left Image", draw_img)
+				draw_connections(draw_img_l, keypoints_left, EDGES, 0.4)
+				draw_keypoints(draw_img_l, keypoints_left, 0.4)
+
+				draw_connections(draw_img_r, keypoints_right, EDGES, 0.4)
+				draw_keypoints(draw_img_r, keypoints_right, 0.4)
+				
+				# Aynı boyutta değillerse boyutları eşitle
+				h = min(draw_img_l.shape[0], draw_img_r.shape[0])
+				w = min(draw_img_l.shape[1], draw_img_r.shape[1])
+				draw_img_l = cv2.resize(draw_img_l, (w, h))
+				draw_img_r = cv2.resize(draw_img_r, (w, h))
+
+				combined = np.hstack((draw_img_l, draw_img_r))
+
+				cv2.imshow("Left + Right Pose", combined)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
