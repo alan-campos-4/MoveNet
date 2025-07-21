@@ -5,16 +5,11 @@ import time
 from datetime import datetime
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
-from pipeline import gstreamer_pipeline
+from pipeline_calibration import gstreamer_pipeline
 
 
 MAX_DISP = 128
 WINDOW_SIZE	= 10
-
-# Load rectification maps (adjust if using .npz or .npy)
-data = np.load("params/disp_params_rectified.npz")
-map_l = (data["map1_l"], data["map2_l"])
-map_r = (data["map1_r"], data["map2_r"])
 
 
 def get_calibration() -> tuple:
@@ -32,7 +27,7 @@ class CameraThread(Thread):
     def __init__(self, sensor_id) -> None:
 
         super().__init__()
-        self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_STREAMER)
+        self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_GSTREAMER)
         self._should_run = True
         self._image = None
         self.start()
@@ -68,8 +63,8 @@ if __name__ == "__main__":
 				ts.append(time.perf_counter())
 			
 				# RGB -> GRAY
-				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_RGB2GRAY)
-				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_RGB2GRAY)
+				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
+				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				ts.append(time.perf_counter())
                 
 				# Rectify
