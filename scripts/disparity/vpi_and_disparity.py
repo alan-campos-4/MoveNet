@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import vpi
 import time
+from threading import Thread
 from datetime import datetime
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
@@ -18,7 +19,7 @@ def get_calibration() -> tuple:
 
     map_l = (data["map1_l"], data["map2_l"])
 
-    map_r = (data["map_r_x"], data["map2_r"])
+    map_r = (data["map1_r"], data["map2_r"])
 
     return map_l, map_r
 
@@ -31,12 +32,12 @@ class CameraThread(Thread):
         self._should_run = True
         self._image = None
         self.start()
-	
-	def run(self):
-		while self._should_run:
-			ret,frame=self._cap.read()
-			if ret:
-				self._image = frame
+	    
+    def run(self):
+	while self._should_run:
+		ret,frame=self._cap.read()
+		if ret:
+			self._image = frame
 
     @property
     def image(self):
@@ -45,7 +46,7 @@ class CameraThread(Thread):
 
     def stop(self):
         self._should_run = False
-        self._cap.stop()
+        self._cap.release()
 
 if __name__ == "__main__":
 	map_l, map_r = get_calibration()
@@ -63,8 +64,8 @@ if __name__ == "__main__":
 				ts.append(time.perf_counter())
 			
 				# RGB -> GRAY
-				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
-				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
+				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
+				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				ts.append(time.perf_counter())
                 
 				# Rectify
@@ -134,8 +135,8 @@ if __name__ == "__main__":
 				
 					print(debug_str)
 				
-		except KeyboardInterrupt as e:
-			print(e)
-		finally:
-			cam_l.stop()
-			cam_r.stop()
+	except KeyboardInterrupt as e:
+		print(e)
+	finally:
+		cam_l.stop()
+		cam_r.stop()
