@@ -52,6 +52,17 @@ if __name__ == "__main__":
 	map_l, map_r = get_calibration()
 	cam_l = CameraThread(1)
 	cam_r = CameraThread(0)
+	
+	time.sleep(0.5)
+	frame_l = cam_l.image
+	frame_r = cam_r.image
+	print("Left frame is None?", frame_l is None, "Right frame is None?", frame_r is None)
+	if frame_l is not None:
+		cv2.imshow("Test Left", frame_l)
+	if frame_r is not None:
+		cv2.imshow("Test Right", frame_r)
+	cv2.waitKey(1000)
+	cv2.destroyAllWindows()
 
     try:
 		with vpi.Backend.CUDA:
