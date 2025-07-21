@@ -65,14 +65,16 @@ if __name__ == "__main__":
 			for i in range(100):
 				ts = []
 				ts.append(time.perf_counter())
-			
-				arr_l = cam_l.image
-				arr_r = cam_r.image
+				
+				while arr_l is None or arr_r is None:
+					time.sleep(0.005)
+					arr_l = cam_l.image
+					arr_r = cam_r.image
 				ts.append(time.perf_counter())
 			
 				# RGB -> GRAY
-				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
-				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
+				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
+				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				ts.append(time.perf_counter())
 				
 				# Rectify
