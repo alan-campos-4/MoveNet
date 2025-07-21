@@ -14,39 +14,35 @@ WINDOW_SIZE	= 10
 
 
 def get_calibration() -> tuple:
-    data = np.load(
-        "params/stereo_params_undistort.npz")
-
-    map_l = (data["map1_l"], data["map2_l"])
-
-    map_r = (data["map1_r"], data["map2_r"])
-
-    return map_l, map_r
+	data = np.load("params/stereo_params_undistort.npz")
+	map_l = (data["map1_l"], data["map2_l"])
+	map_r = (data["map1_r"], data["map2_r"])
+	return map_l, map_r
 
 # Initialize left and right CSI cameras using GStreamer
 class CameraThread(Thread):
-    def __init__(self, sensor_id) -> None:
+	def __init__(self, sensor_id) -> None:
 
-        super().__init__()
-        self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_GSTREAMER)
-        self._should_run = True
-        self._image = None
-        self.start()
-	    
-    def run(self):
-	while self._should_run:
-		ret,frame=self._cap.read()
-		if ret:
-			self._image = frame
+		super().__init__()
+		self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_GSTREAMER)
+		self._should_run = True
+		self._image = None
+		self.start()
+		
+	def run(self):
+		while self._should_run:
+			ret,frame=self._cap.read()
+			if ret:
+				self._image = frame
 
-    @property
-    def image(self):
-        # NOTE: if we care about atomicity of reads, we can add a lock here
-        return self._image
+	@property
+	def image(self):
+		# NOTE: if we care about atomicity of reads, we can add a lock here
+		return self._image
 
-    def stop(self):
-        self._should_run = False
-        self._cap.release()
+	def stop(self):
+		self._should_run = False
+		self._cap.release()
 
 if __name__ == "__main__":
 	map_l, map_r = get_calibration()
@@ -64,10 +60,10 @@ if __name__ == "__main__":
 	cv2.waitKey(1000)
 	cv2.destroyAllWindows()
 
-    try:
+	try:
 		with vpi.Backend.CUDA:
 			for i in range(100):
-				ts=[]
+				ts = []
 				ts.append(time.perf_counter())
 			
 				arr_l = cam_l.image
@@ -78,7 +74,7 @@ if __name__ == "__main__":
 				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
 				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				ts.append(time.perf_counter())
-                
+				
 				# Rectify
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
 				arr_r_rect = cv2.remap(arr_r, *map_r, cv2.INTER_LANCZOS4)
