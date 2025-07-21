@@ -50,6 +50,11 @@ if __name__ == "__main__":
 	cam_r = CameraThread(0)
 	
 	time.sleep(0.5)
+	for _ in range(5):
+            _ = cam_l.image
+            _ = cam_r.image
+            time.sleep(0.05)
+		
 	frame_l = cam_l.image
 	frame_r = cam_r.image
 	print("Left frame is None?", frame_l is None, "Right frame is None?", frame_r is None)
@@ -68,12 +73,20 @@ if __name__ == "__main__":
 			
 				arr_l = cam_l.image
 				arr_r = cam_r.image
+				
+				for _ in range(5):
+				    _ = cam_l.image
+				    _ = cam_r.image
+				    time.sleep(0.05)
 				ts.append(time.perf_counter())
 			
 				# RGB -> GRAY
-				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
-				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
+				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
+				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				ts.append(time.perf_counter())
+
+				# --- Debug: print shapes ---
+                		print(f"Frame shape: {arr_l.shape}, Map shape: {map_l[0].shape}")
 				
 				# Rectify
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
@@ -84,6 +97,12 @@ if __name__ == "__main__":
 				arr_l_rect = cv2.resize(arr_l_rect, (480, 270))
 				arr_r_rect = cv2.resize(arr_r_rect, (480, 270))
 				ts.append(time.perf_counter())
+
+				# --- Debug: show rectified images ---
+                		cv2.imshow("Left Rectified", arr_l_rect)
+                		cv2.imshow("Right Rectified", arr_r_rect)
+                		cv2.waitKey(1)
+                		ts.append(time.perf_counter())
 			
 				# Convert to VPI image
 				vpi_l = vpi.asimage(arr_l_rect)
