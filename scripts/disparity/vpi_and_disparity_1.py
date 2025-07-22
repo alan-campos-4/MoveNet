@@ -10,7 +10,7 @@ from pipeline import gstreamer_pipeline
 
 
 MAX_DISP = 128
-WINDOW_SIZE	= 10
+WINDOW_SIZE	= 13
 
 
 def get_calibration() -> tuple:
@@ -91,13 +91,22 @@ if __name__ == "__main__":
 					backend = vpi.Backend.CUDA,
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
+					uniqueness=0.8,
+    					p1=8,
+   	 				p2=32,
+    					confidenceThreshold=10000,
+    					skip_diagonal=False,
+    					num_passes=2
 				)
 				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP))
 				ts.append(time.perf_counter())
 				
 				disp_arr = disparity_8bpp.cpu()
 				ts.append(time.perf_counter())
-				
+
+				disp_arr = np.where(disp_arr < 5, 0, disp_arr)
+				ts.append(time.perf_counter())
+			
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				ts.append(time.perf_counter())
 				
