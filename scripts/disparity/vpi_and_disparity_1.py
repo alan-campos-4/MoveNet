@@ -104,14 +104,10 @@ if __name__ == "__main__":
 				cv2.imshow("Disparity", disp_arr)
 				ts.append(time.perf_counter())
 				
-				if cv2.waitKey(1) & 0xFF==ord('q'):
-					break
-				
 				ts = np.array(ts)
 				ts_deltas = np.diff(ts)
 				
-				debug_str = f"Iter {i}\n"
-				
+				debug_str = f"Iter \n"
 				for task, dt in zip(
 					[
 						"Read images",
@@ -129,6 +125,9 @@ if __name__ == "__main__":
 					debug_str += f"{task} {1000*dt:0.2f}\n"
 				
 				print(debug_str)
+				
+				if cv2.waitKey(1) & 0xFF==ord('q'):
+					break
 				
 	except KeyboardInterrupt as e:
 		print(e)

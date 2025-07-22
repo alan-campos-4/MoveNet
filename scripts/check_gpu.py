@@ -3,7 +3,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'# turns off different numerical values 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # enables more tf instructions in operations
 
 import tensorflow as tf
-import cv2
+
 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 print("Num CPUs Available: ", len(tf.config.list_physical_devices('CPU')))

@@ -46,7 +46,6 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
         ky, kx, kp_conf = kp
         if kp_conf > confidence_threshold:
             cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
-            tf.config.list_physical_devices('GPU')
 
 
 # Draw the edges between the coordinates

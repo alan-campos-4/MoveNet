@@ -32,3 +32,7 @@ python main.py
 
 
 
+I have a reComputer J20 with Nvidida Jetson Xavier NX 16GB running Ubuntu 20.04 with Python 3.8 and L4T 35.6.2 installed
+I want to install TensorFlow with GPU support.
+
+

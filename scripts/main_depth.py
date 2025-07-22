@@ -50,7 +50,6 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
         ky, kx, kp_conf = kp
         if kp_conf > confidence_threshold:
             cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
-            tf.config.list_physical_devices('GPU')
 
 
 # Draw the edges between the coordinates
@@ -108,10 +107,6 @@ class CameraThread(Thread):
 
 
 
-
-
-
-
 if __name__ == '__main__':
 
 	# Loads the model from the file.
@@ -150,6 +145,14 @@ if __name__ == '__main__':
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
 				arr_r_rect = cv2.remap(arr_r, *map_r, cv2.INTER_LANCZOS4)
 				
+				# Apply slight Gaussian blur to reduce high-frequency noise
+				arr_l_rect = cv2.GaussianBlur(arr_l_rect, (3, 3), 0)
+				arr_r_rect = cv2.GaussianBlur(arr_r_rect, (3, 3), 0)
+				
+				# Apply bilateral filter to reduce noise while preserving edges
+				#arr_l_rect = cv2.bilateralFilter(arr_l_rect, 9, 75, 75)
+				#arr_r_rect = cv2.bilateralFilter(arr_r_rect, 9, 75, 75)
+				
 				# Resize
 				arr_l_rect = cv2.resize(arr_l_rect, (480, 270))
 				arr_r_rect = cv2.resize(arr_r_rect, (480, 270))
@@ -157,11 +160,12 @@ if __name__ == '__main__':
 				# Convert to VPI image
 				vpi_l = vpi.asimage(arr_l_rect)
 				vpi_r = vpi.asimage(arr_r_rect)
-				
+			
 				vpi_l_16bpp = vpi_l.convert(vpi.Format.U16, scale=1)
 				vpi_r_16bpp = vpi_r.convert(vpi.Format.U16, scale=1)
-				vpi_l_16bpp = vpi_l.convert(vpi.Format.U16, scale=1)
-				vpi_r_16bpp = vpi_r.convert(vpi.Format.U16, scale=1)
+			
+				#vpi_l_16bpp = vpi_l.convert(vpi.Format.U16, scale=1)
+				#vpi_r_16bpp = vpi_r.convert(vpi.Format.U16, scale=1)
 				
 				disparity_16bpp = vpi.stereodisp(
 					vpi_l_16bpp,
@@ -171,9 +175,10 @@ if __name__ == '__main__':
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
 				)
-				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP))
+				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32*MAX_DISP) )
 				
 				disp_arr = disparity_8bpp.cpu()
+				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				
 				## Apply MoveNet
