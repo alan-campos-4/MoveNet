@@ -9,8 +9,8 @@ sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline_calibration import gstreamer_pipeline
 
 
-MAX_DISP = 128
-WINDOW_SIZE	= 10
+MAX_DISP = 64
+WINDOW_SIZE	= 11
 
 
 def get_calibration() -> tuple:
@@ -90,7 +90,11 @@ if __name__ == "__main__":
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
 				arr_r_rect = cv2.remap(arr_r, *map_r, cv2.INTER_LANCZOS4)
 				ts.append(time.perf_counter())
-				
+
+				# Apply slight Gaussian blur to reduce high-frequency noise
+				arr_l_rect = cv2.GaussianBlur(arr_l_rect, (5, 5), 0)
+				arr_r_rect = cv2.GaussianBlur(arr_r_rect, (5, 5), 0)
+
 				# Resize
 				arr_l_rect = cv2.resize(arr_l_rect, (480, 270))
 				arr_r_rect = cv2.resize(arr_r_rect, (480, 270))
@@ -115,7 +119,7 @@ if __name__ == "__main__":
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
 				)
-				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP))
+				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / MAX_DISP)
 				ts.append(time.perf_counter())
 			
 				disp_arr = disparity_8bpp.cpu()
