@@ -181,22 +181,47 @@ if __name__ == '__main__':
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				
-				## Apply MoveNet
-				disp_arr_resized = tf.image.resize_with_pad(np.expand_dims(disp_arr, axis=0), 256, 256)
-				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32) / 255.0
-				
-				interpreter.set_tensor(input_details[0]['index'], disp_resized.numpy())
+				# Prepare input for MoveNet from left rectified frame
+				frame_rgb = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
+				input_image = tf.image.resize_with_pad(np.expand_dims(frame_rgb, axis=0), 256, 256)
+				input_image = tf.cast(input_image, dtype=tf.float32) / 255.0
+
+				# Run MoveNet inference
+				interpreter.set_tensor(input_details[0]['index'], input_image.numpy())
 				interpreter.invoke()
-				keypoints = interpreter.get_tensor(output_details[0]['index'])
-				
-				draw_img = disp_arr.copy()
-				draw_connections(draw_img, keypoints, EDGES, 0.4)
-				draw_keypoints(draw_img, keypoints, 0.4)
+				keypoints = np.squeeze(interpreter.get_tensor(output_details[0]['index']))
 
+				# Depth estimation parameters
+				baseline = 0.1       # Distance between cameras in meters
+				focal_length = 580   # Focal length in pixels (from calibration)
+
+				# Image size for keypoint mapping
+				h, w = frame_rgb.shape[:2]
+
+				# Iterate over each keypoint to calculate depth from disparity
+				for y_norm, x_norm, conf in keypoints:
+    					if conf < 0.4:
+        					continue
+    					x = int(x_norm * w)
+    					y = int(y_norm * h)
+
+				if 0 <= x < w and 0 <= y < h:
+        				disparity_val = disp_arr[y, x][0]  # Use red channel from colormap
+        				if disparity_val > 0:
+            					depth = (baseline * focal_length) / disparity_val
+            					cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
+            					cv2.putText(frame_rgb, f"{depth:.2f}m", (x, y - 10),
+                        				cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+
+				# Draw skeleton on frame
+				draw_connections(frame_rgb, keypoints, EDGES, 0.4)
+				draw_keypoints(frame_rgb, keypoints, 0.4)
+
+				# Resize outputs for display
 				disp_vis = cv2.resize(disp_arr, (640, 360))
-				pose_vis = cv2.resize(draw_img, (640, 360))
+				pose_vis = cv2.resize(frame_rgb, (640, 360))
 
-				#Show the result
+				# Show both disparity and pose estimation results
 				cv2.imshow("Disparity", disp_vis)
 				cv2.imshow("Pose Estimation", pose_vis)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
