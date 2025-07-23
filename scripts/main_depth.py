@@ -112,6 +112,9 @@ if __name__ == '__main__':
 	# Loads the model from the file.
 	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
 	interpreter.allocate_tensors()
+
+    	input_details = interpreter.get_input_details()
+    	output_details = interpreter.get_output_details()
     
 	map_l, map_r = get_calibration()
 	cam_l = CameraThread(0)
@@ -183,25 +186,22 @@ if __name__ == '__main__':
 				
 				## Apply MoveNet
 				disp_arr_resized = tf.image.resize_with_pad(np.expand_dims(disp_arr, axis=0), 256, 256)
-				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32).numpy()
+				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32) / 255.0
 				
-				input_details = interpreter.get_input_details()
-				output_details = interpreter.get_output_details()
-				
-				interpreter.set_tensor(input_details[0]['index'], disp_resized)
+				interpreter.set_tensor(input_details[0]['index'], disp_resized.numpy())
 				interpreter.invoke()
 				keypoints = interpreter.get_tensor(output_details[0]['index'])
 				
-				draw_img = cv2.cvtColor(disp_resized, cv2.COLOR_GRAY2BGR)
+				draw_img = disp_colormap.copy()
 				draw_connections(draw_img, keypoints, EDGES, 0.4)
 				draw_keypoints(draw_img, keypoints, 0.4)
-				
+
+				disp_vis = cv2.resize(disp_colormap, (640, 360))
+                		pose_vis = cv2.resize(draw_img, (640, 360))
+
 				#Show the result
-				h = draw_img.shape[0]
-				w = draw_img.shape[1]
-				draw_img = cv2.resize(draw_img, (w, h))
-				
-				cv2.imshow("Disparity", disp_arr)
+				cv2.imshow("Disparity", disp_vis)
+                		cv2.imshow("Pose Estimation", pose_vis)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
