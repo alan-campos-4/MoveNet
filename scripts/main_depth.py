@@ -17,24 +17,24 @@ from datetime import datetime
 
 # All the connections between keypoints
 EDGES = {
-    (0, 1): 'm',
-    (0, 2): 'c',
-    (1, 3): 'm',
-    (2, 4): 'c',
-    (0, 5): 'm',
-    (0, 6): 'c',
-    (5, 7): 'm',
-    (7, 9): 'm',
-    (6, 8): 'c',
-    (8, 10): 'c',
-    (5, 6): 'y',
-    (5, 11): 'm',
-    (6, 12): 'c',
-    (11, 12): 'y',
-    (11, 13): 'm',
-    (13, 15): 'm',
-    (12, 14): 'c',
-    (14, 16): 'c',
+	(0, 1): 'm',
+	(0, 2): 'c',
+	(1, 3): 'm',
+	(2, 4): 'c',
+	(0, 5): 'm',
+	(0, 6): 'c',
+	(5, 7): 'm',
+	(7, 9): 'm',
+	(6, 8): 'c',
+	(8, 10): 'c',
+	(5, 6): 'y',
+	(5, 11): 'm',
+	(6, 12): 'c',
+	(11, 12): 'y',
+	(11, 13): 'm',
+	(13, 15): 'm',
+	(12, 14): 'c',
+	(14, 16): 'c',
 }
 
 # Variables
@@ -43,27 +43,24 @@ point_color = (0,255,0) #Green
 
 # Draw the keypoints as circles in the frame
 def draw_keypoints(frame, keypoints, confidence_threshold):
-    y, x, c = frame.shape
-    shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
-
-    for kp in shaped_array:
-        ky, kx, kp_conf = kp
-        if kp_conf > confidence_threshold:
-            cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
+	y, x, c = frame.shape
+	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
+	for kp in shaped_array:
+		ky, kx, kp_conf = kp
+		if kp_conf > confidence_threshold:
+			cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
 
 
 # Draw the edges between the coordinates
 def draw_connections(frame, keypoints, edges, confidence_threshold):
-    y, x, c = frame.shape
-    shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
-    
-    for edge, color in edges.items(): 
-        p1, p2 = edge
-        y1, x1, c1 = shaped_array[p1]
-        y2, x2, c2 = shaped_array[p2]
-
-        if (c1 > confidence_threshold) & (c2 > confidence_threshold):
-            cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), edge_color, 2)
+	y, x, c = frame.shape
+	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
+	for edge, color in edges.items(): 
+		p1, p2 = edge
+		y1, x1, c1 = shaped_array[p1]
+		y2, x2, c2 = shaped_array[p2]
+		if (c1 > confidence_threshold) & (c2 > confidence_threshold):
+			cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), edge_color, 2)
 
 
 MAX_DISP = 128
@@ -71,7 +68,7 @@ WINDOW_SIZE	= 10
 
 
 def get_calibration() -> tuple:
-	data = np.load("params/stereo_params_undistort.npz")
+	data = np.load("params/disp_params_rectified.npz")
 	map_l = (data["map1_l"], data["map2_l"])
 	map_r = (data["map1_r"], data["map2_r"])
 	return map_l, map_r
@@ -112,7 +109,10 @@ if __name__ == '__main__':
 	# Loads the model from the file.
 	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
 	interpreter.allocate_tensors()
-    
+
+	input_details = interpreter.get_input_details()
+	output_details = interpreter.get_output_details()
+	
 	map_l, map_r = get_calibration()
 	cam_l = CameraThread(0)
 	cam_r = CameraThread(1)
@@ -133,9 +133,9 @@ if __name__ == '__main__':
 				arr_l = cam_l.image
 				arr_r = cam_r.image
 				for _ in range(5):
-				    _ = cam_l.image
-				    _ = cam_r.image
-				    time.sleep(0.05)
+					_ = cam_l.image
+					_ = cam_r.image
+					time.sleep(0.05)
 				
 				# RGB -> GRAY
 				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
@@ -183,25 +183,22 @@ if __name__ == '__main__':
 				
 				## Apply MoveNet
 				disp_arr_resized = tf.image.resize_with_pad(np.expand_dims(disp_arr, axis=0), 256, 256)
-				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32).numpy()
+				disp_resized = tf.cast(disp_arr_resized, dtype=tf.float32) / 255.0
 				
-				input_details = interpreter.get_input_details()
-				output_details = interpreter.get_output_details()
-				
-				interpreter.set_tensor(input_details[0]['index'], disp_resized)
+				interpreter.set_tensor(input_details[0]['index'], disp_resized.numpy())
 				interpreter.invoke()
 				keypoints = interpreter.get_tensor(output_details[0]['index'])
 				
-				draw_img = cv2.cvtColor(disp_resized, cv2.COLOR_GRAY2BGR)
+				draw_img = disp_arr.copy()
 				draw_connections(draw_img, keypoints, EDGES, 0.4)
 				draw_keypoints(draw_img, keypoints, 0.4)
-				
+
+				disp_vis = cv2.resize(disp_arr, (640, 360))
+				pose_vis = cv2.resize(draw_img, (640, 360))
+
 				#Show the result
-				h = draw_img.shape[0]
-				w = draw_img.shape[1]
-				draw_img = cv2.resize(draw_img, (w, h))
-				
-				cv2.imshow("Disparity", disp_arr)
+				cv2.imshow("Disparity", disp_vis)
+				cv2.imshow("Pose Estimation", pose_vis)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				

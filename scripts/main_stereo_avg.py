@@ -34,35 +34,29 @@ EDGES = {
 }
 
 # Variables
-edge_color =  (0,0,255) #Red
-point_color = (0,255,0) #Green
+color_red = (0,0,255) #Red
+color_grn = (0,255,0) #Green
+color_blu = (255,0,0) #Blue
 
 # Draw the keypoints as circles in the frame
-def draw_keypoints(frame, keypoints, confidence_threshold):
+def draw_keypoints(frame, keypoints, confidence_threshold, color=(0,255,0)):
 	y, x, c = frame.shape
 	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
-
 	for kp in shaped_array:
 		ky, kx, kp_conf = kp
 		if kp_conf > confidence_threshold:
-			cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
-			tf.config.list_physical_devices('GPU')
-
+			cv2.circle(frame, (int(kx), int(ky)), 4, color, -1)
 
 # Draw the edges between the coordinates
-def draw_connections(frame, keypoints, edges, confidence_threshold):
+def draw_connections(frame, keypoints, edges, confidence_threshold, colorN=(0,0,255)):
 	y, x, c = frame.shape
 	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1])) # multiplies the keypoints by the dimesions of the frame
-
 	for edge, color in edges.items(): # for every edge, gets the coordinates of the two points and connects them
-		p1, p2 = edge
-		y1, x1, c1 = shaped_array[p1]
-		y2, x2, c2 = shaped_array[p2]
-
+		i1, i2 = edge
+		y1, x1, c1 = shaped_array[i1]
+		y2, x2, c2 = shaped_array[i2]
 		if (c1 > confidence_threshold) & (c2 > confidence_threshold):
-			cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), edge_color, 2)
-
-
+			cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), colorN, 2)
 
 
 
@@ -84,11 +78,10 @@ if __name__ == '__main__':
 	T =  data['T']   # Translation vector between cameras
 
 	# Open both cameras
-	width=640
-	height=360
+	width = 640
+	height = 360
 	cap0 = cv2.VideoCapture(gstreamer_pipeline(0, width, height), cv2.CAP_GSTREAMER)
 	cap1 = cv2.VideoCapture(gstreamer_pipeline(1, width, height), cv2.CAP_GSTREAMER)
-	img = np.zeros((height, width, 3), np.uint8)
 
 	if not cap0.isOpened():
 		print("Error: Could not open camera 0")
@@ -100,14 +93,14 @@ if __name__ == '__main__':
 	while True:
 		ret0, frame0 = cap0.read()
 		ret1, frame1 = cap1.read()
-
+		
 		if not ret0 or not ret1:
 			print("Error: Could not read from one or both cameras.")
 			break
 			
 		frame0_ud = cv2.undistort(frame0, K1, D1)
 		frame1_ud = cv2.undistort(frame1, K2, D2)
-	
+		
 		# Reshape image
 		img0 = frame0_ud.copy()
 		img1 = frame1_ud.copy()
@@ -115,13 +108,13 @@ if __name__ == '__main__':
 		img1 = tf.image.resize_with_pad(np.expand_dims(img1, axis=0), 256, 256)
 		input_image_0 = tf.cast(img0, dtype=tf.float32)
 		input_image_1 = tf.cast(img1, dtype=tf.float32)
-
+		
 		# Setup input and output
 		input_details_0 = interpreter.get_input_details()
 		input_details_1 = interpreter.get_input_details()
 		output_details_0 = interpreter.get_output_details()
 		output_details_1 = interpreter.get_output_details()
-
+		
 		# Make predictions
 		interpreter.set_tensor(input_details_0[0]['index'], np.array(input_image_0))
 		interpreter.set_tensor(input_details_1[0]['index'], np.array(input_image_1))
@@ -130,8 +123,8 @@ if __name__ == '__main__':
 		keypoints_with_scores_1 = interpreter.get_tensor(output_details_1[0]['index'])
 		
 		#Average of the keypoints
-		keypoints_with_scores_avg = []
-			
+		keypoints_avg = []
+		
 		for block0, block1 in zip(keypoints_with_scores_0, keypoints_with_scores_1):
 			new_block = []
 			for col0, col1 in zip(block0, block1):
@@ -143,25 +136,32 @@ if __name__ == '__main__':
 						new_row.append(new_num)
 					new_col.append(new_row)
 				new_block.append(new_col)
-			keypoints_with_scores_avg.append(new_block)
-			
-		keypoints_with_scores_avg = np.array(keypoints_with_scores_avg)
+			keypoints_avg.append(new_block)
 		
-		# Create blank frame for the pose
-		frame_blank = np.zeros((height,width,3), np.uint8)
+		print(keypoints_with_scores_0)
+		print(np.array(keypoints_avg))
+		
+		# Create blank frames for the estimation comparison
+		frame_avg =	 np.zeros((height,width,3), np.uint8)
+		frame_left = np.zeros((height,width,3), np.uint8)
 		
 		# Rendering and showing the image
-		draw_connections(frame_blank, keypoints_with_scores_avg, EDGES, 0.4)
-		draw_keypoints(frame_blank, keypoints_with_scores_avg, 0.4)
+		draw_connections(frame_avg, keypoints_avg, EDGES, 0.4, (255,0,0) )
+		draw_keypoints(frame_avg,   keypoints_avg, 0.4)
+		draw_connections(frame_left, keypoints_with_scores_0, EDGES, 0.4)
+		draw_keypoints(frame_left,   keypoints_with_scores_0, 0.4)
+		draw_connections(frame_left, keypoints_with_scores_1, EDGES, 0.4, (255,255,0))
+		draw_keypoints(frame_left,   keypoints_with_scores_1, 0.4, (255,255,255))
 		
 		# Resize
-		frame0_ud	= cv2.resize(frame0_ud, (480, 270))
-		frame1_ud	= cv2.resize(frame1_ud, (480, 270))
-		frame_blank = cv2.resize(frame_blank, (480, 270))
+		#frame0_ud	= cv2.resize(frame0_ud, (480, 270))
+		#frame1_ud	= cv2.resize(frame1_ud, (480, 270))
+		frame_avg	= cv2.resize(frame_avg, (480, 270))
+		frame_left	= cv2.resize(frame_left, (480, 270))
 		
 		# Show the results
-		cv2.imshow("Combined Cameras", np.hstack((frame0_ud, frame1_ud)) )
-		cv2.imshow("MoveNet Estimation", frame_blank)
+		#cv2.imshow("Combined Cameras", np.hstack((frame0_ud, frame1_ud)) )
+		cv2.imshow("Left Camera / Average of cameras", np.hstack((frame_left, frame_avg)) )
 		
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break

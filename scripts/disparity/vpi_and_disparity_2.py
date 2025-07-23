@@ -48,15 +48,20 @@ class CameraThread(Thread):
 if __name__ == "__main__":
 
 	map_l, map_r = get_calibration()
-	cam_l = CameraThread(1)
-	cam_r = CameraThread(0)
-	print(map_l)
-	print(map_r)
+	cam_l = CameraThread(0)
+	cam_r = CameraThread(1)
+	
+	time.sleep(0.5)
+	for _ in range(5):
+		_ = cam_l.image
+		_ = cam_r.image
+		time.sleep(0.05)
+	frame_l = cam_l.image
+	frame_r = cam_r.image
 
 	try:
 		with vpi.Backend.CUDA:
 			while True:
-				ts = []
 				arr_l = cam_l.image
 				arr_r = cam_r.image
 				
@@ -85,12 +90,6 @@ if __name__ == "__main__":
 					backend = vpi.Backend.CUDA,
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
-					uniqueness=0.8,
-    				p1=8,
-   	 				p2=32,
-    				confidenceThreshold=10000,
-    				skip_diagonal=False,
-    				num_passes=2
 				)
 				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP))
 				disp_arr = disparity_8bpp.cpu()
