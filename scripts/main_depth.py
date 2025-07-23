@@ -192,26 +192,24 @@ if __name__ == '__main__':
 				keypoints = np.squeeze(interpreter.get_tensor(output_details[0]['index']))
 
 				# Depth estimation parameters
-				baseline = 0.1       # Distance between cameras in meters
+				baseline = 0.1	   # Distance between cameras in meters
 				focal_length = 580   # Focal length in pixels (from calibration)
-
+				
 				# Image size for keypoint mapping
 				h, w = frame_rgb.shape[:2]
-
+				
 				# Iterate over each keypoint to calculate depth from disparity
 				for y_norm, x_norm, conf in keypoints:
-    					if conf < 0.4:
-        					continue
-    					x = int(x_norm * w)
-    					y = int(y_norm * h)
-
-				if 0 <= x < w and 0 <= y < h:
-        				disparity_val = disp_arr[y, x][0]  # Use red channel from colormap
-        				if disparity_val > 0:
-            					depth = (baseline * focal_length) / disparity_val
-            					cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
-            					cv2.putText(frame_rgb, f"{depth:.2f}m", (x, y - 10),
-                        				cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+					if conf < 0.4:
+						continue
+					x = int(x_norm * w)
+					y = int(y_norm * h)
+					if 0 <= x < w and 0 <= y < h:
+						disparity_val = disp_arr[y, x][0]  # Use red channel from colormap
+						if disparity_val > 0:
+							depth = (baseline * focal_length) / disparity_val
+							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
+							cv2.putText(frame_rgb, f"{depth:.2f}m", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
 
 				# Draw skeleton on frame
 				draw_connections(frame_rgb, keypoints, EDGES, 0.4)

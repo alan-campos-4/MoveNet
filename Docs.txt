@@ -5,10 +5,11 @@
 	/scripts/main.py
 performs basic pose estimation using the MoveNet model with TensorFlow on a single camera.
 
+	/scripts/main_depth.py and /scripts/main_depth_1.py
+is a combination of /scripts/main.py and /scripts/disparity/vpi_and_disparity.py that calculates pose estimation and uses disparity to determine the distance of each point from the camera. 
+
 	/scripts/main_depth.py
-is a combination of /scripts/main.py and /scripts/disparity/vpi_and_disparity.py and applies MoveNet pose estimation to the disparity map created from both cameras. 
-Pose is not recognized currently... 
-May need to adjust color range to one color or create output with OpenCV.
+is a combination of /scripts/main.py and /scripts/disparity/vpi_and_disparity.py that calculates pose estimation alongside disparity from the same stereo camera feed. 
 
 	/scripts/main_stereo.py
 is a modified version of main.py that performs pose estimation on both cameras simultaneously.
