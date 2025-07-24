@@ -63,17 +63,6 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
 			cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), edge_color, 2)
 
 
-MAX_DISP = 128
-WINDOW_SIZE	= 10
-
-
-def get_calibration() -> tuple:
-	data = np.load("params/disp_params_rectified.npz")
-	map_l = (data["map1_l"], data["map2_l"])
-	map_r = (data["map1_r"], data["map2_r"])
-	return map_l, map_r
-
-
 # Initialize left and right CSI cameras using GStreamer
 class CameraThread(Thread):
 	def __init__(self, sensor_id) -> None:
@@ -99,17 +88,26 @@ class CameraThread(Thread):
 		self._cap.release()
 
 
+def get_calibration() -> tuple:
+	data = np.load("params/disp_params_rectified.npz")
+	map_l = (data["map1_l"], data["map2_l"])
+	map_r = (data["map1_r"], data["map2_r"])
+	return map_l, map_r
+
+
+MAX_DISP = 128
+WINDOW_SIZE	= 10
 
 
 
 
 
 if __name__ == '__main__':
-
+	
 	# Loads the model from the file.
 	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
 	interpreter.allocate_tensors()
-
+	
 	input_details = interpreter.get_input_details()
 	output_details = interpreter.get_output_details()
 	
@@ -124,8 +122,6 @@ if __name__ == '__main__':
 		time.sleep(0.05)
 	frame_l = cam_l.image
 	frame_r = cam_r.image
-	
-	print("Left frame is None?", frame_l is None, "Right frame is None?", frame_r is None)
 	
 	try:
 		with vpi.Backend.CUDA:
@@ -149,10 +145,6 @@ if __name__ == '__main__':
 				arr_l_rect = cv2.GaussianBlur(arr_l_rect, (3, 3), 0)
 				arr_r_rect = cv2.GaussianBlur(arr_r_rect, (3, 3), 0)
 				
-				# Apply bilateral filter to reduce noise while preserving edges
-				#arr_l_rect = cv2.bilateralFilter(arr_l_rect, 9, 75, 75)
-				#arr_r_rect = cv2.bilateralFilter(arr_r_rect, 9, 75, 75)
-				
 				# Resize
 				arr_l_rect = cv2.resize(arr_l_rect, (480, 270))
 				arr_r_rect = cv2.resize(arr_r_rect, (480, 270))
@@ -160,12 +152,9 @@ if __name__ == '__main__':
 				# Convert to VPI image
 				vpi_l = vpi.asimage(arr_l_rect)
 				vpi_r = vpi.asimage(arr_r_rect)
-			
+				
 				vpi_l_16bpp = vpi_l.convert(vpi.Format.U16, scale=1)
 				vpi_r_16bpp = vpi_r.convert(vpi.Format.U16, scale=1)
-			
-				#vpi_l_16bpp = vpi_l.convert(vpi.Format.U16, scale=1)
-				#vpi_r_16bpp = vpi_r.convert(vpi.Format.U16, scale=1)
 				
 				disparity_16bpp = vpi.stereodisp(
 					vpi_l_16bpp,
@@ -175,7 +164,7 @@ if __name__ == '__main__':
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
 				)
-				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32*MAX_DISP) )
+				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP) )
 				
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
@@ -185,15 +174,15 @@ if __name__ == '__main__':
 				frame_rgb = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
 				input_image = tf.image.resize_with_pad(np.expand_dims(frame_rgb, axis=0), 256, 256)
 				input_image = tf.cast(input_image, dtype=tf.float32) / 255.0
-
+				
 				# Run MoveNet inference
 				interpreter.set_tensor(input_details[0]['index'], input_image.numpy())
 				interpreter.invoke()
 				keypoints = np.squeeze(interpreter.get_tensor(output_details[0]['index']))
-
+				
 				# Depth estimation parameters
-				baseline = 0.1	   # Distance between cameras in meters
-				focal_length = 580   # Focal length in pixels (from calibration)
+				baseline = 0.1		# Distance between cameras in meters
+				focal_length = 580	# Focal length in pixels (from calibration)
 				
 				# Image size for keypoint mapping
 				h, w = frame_rgb.shape[:2]
@@ -210,15 +199,15 @@ if __name__ == '__main__':
 							depth = (baseline * focal_length) / disparity_val
 							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
 							cv2.putText(frame_rgb, f"{depth:.2f}m", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
-
+				
 				# Draw skeleton on frame
 				draw_connections(frame_rgb, keypoints, EDGES, 0.4)
 				draw_keypoints(frame_rgb, keypoints, 0.4)
-
+				
 				# Resize outputs for display
 				disp_vis = cv2.resize(disp_arr, (640, 360))
 				pose_vis = cv2.resize(frame_rgb, (640, 360))
-
+				
 				# Show both disparity and pose estimation results
 				cv2.imshow("Disparity", disp_vis)
 				cv2.imshow("Pose Estimation", pose_vis)
