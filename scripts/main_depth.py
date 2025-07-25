@@ -167,9 +167,11 @@ if __name__ == '__main__':
 					maxdisp = MAX_DISP,
 				)
 				
-				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP)).cpu().copy()
+				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP)).cpu()
 				disp_vis = cv2.medianBlur(disp_raw, 5)
 				disp_arr = cv2.applyColorMap(disp_vis, cv2.COLORMAP_TURBO)
+
+				draw_img = disp_arr.copy()
 				
 				# Prepare input for MoveNet from left rectified frame
 				frame_rgb = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
@@ -191,30 +193,38 @@ if __name__ == '__main__':
 				# Image size for keypoint mapping
 				h, w = frame_rgb.shape[:2]
 				
-				# Iterate over each keypoint to calculate depth from disparity
-				for y_norm, x_norm, conf in keypoints:
+				# Iterate over each keypoint to calculate 3D position using disparity
+				# (Only print elbows for performance)
+				for idx, (y_norm, x_norm, conf) in enumerate(keypoints):
 					if conf < 0.4:
 						continue
 					x = int(x_norm * w)
 					y = int(y_norm * h)
 					if 0 <= x < w and 0 <= y < h:
-						disparity_val = disp_raw[y, x]  # Use raw disparity value (single channel)
+						# Get disparity value at keypoint location
+						disparity_val = disp_raw[y, x]
 						if disparity_val > 0:
+							# Calculate depth (z), and 3D coordinates (X, Y)
 							z = (baseline * focal_length) / disparity_val
 							X = (x - cx) * z / focal_length
 							Y = (y - cy) * z / focal_length
-							label = f"x:{X:.2f}m, y:{Y:.2f}m, z:{z:.2f}m"
-							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
-							cv2.putText(frame_rgb, label, (x + 5, y - 10),
-							        cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
+				
+							# Print only elbow keypoints (left = 7, right = 8)
+							if idx == 7:
+								print(f"[Left Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
+							elif idx == 8:
+								print(f"[Right Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
+				
+							# Optionally draw keypoint as a green dot (lightweight)
+							cv2.circle(draw_img, (x, y), 4, (0, 255, 0), -1)
 				
 				# Draw skeleton on frame
-				draw_connections(frame_rgb, keypoints, EDGES, 0.4)
-				draw_keypoints(frame_rgb, keypoints, 0.4)
+				draw_connections(draw_img, keypoints, EDGES, 0.4)
+				draw_keypoints(draw_img, keypoints, 0.4)
 				
 				# Resize outputs for display
 				disp_show = cv2.resize(disp_arr, (640, 360))
-				pose_show = cv2.resize(frame_rgb, (640, 360))
+				pose_show = cv2.resize(draw_img, (640, 360))
 				
 				# Show both disparity and pose estimation results
 				cv2.imshow("Disparity", disp_show)
