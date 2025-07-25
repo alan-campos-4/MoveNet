@@ -59,7 +59,7 @@ python main.py
 ###### Virtual environment ######
 
  sudo apt install python3-opencv
- python3 -m venv venv --system-site-packages
+ python3 -m venv .venv --system-site-packages
  source venv/bin/activate
 > print(cv2.getBuildInformation())
 > GStreamer:	YES (1.16.2)
@@ -81,10 +81,12 @@ After creating virtual environment with opencv:
  pip install keras==2.11.0
  pip install google-auth-oauthlib==0.4.6
  pip install h5py==3.7.0
+ pip install onnx
+ pip install --upgrade pandas	## np.bool depricated
  sudo apt-get install python3-dev
  pip install --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v51 tensorflow==2.11.0+nv23.01
  sudo nano /usr/lib/python3/dist-packages/scipy/sparse/sputils.py	typeDict -> sctypeDict  ## typeDict deprecated
- pip install --upgrade pandas	## np.bool depricated
+
 bashrc:
   export LD_PRELOAD=/lib/aarch64-linux-gnu/libGLdispatch.so.0
   

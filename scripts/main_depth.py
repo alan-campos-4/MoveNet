@@ -3,6 +3,7 @@ import sys
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # turns off different numerical values due to rounding errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # enables more tf instructions in operations
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
+from pose_estimation import *
 from pipeline import gstreamer_pipeline
 import cv2
 import numpy as np
@@ -13,54 +14,6 @@ from threading import Thread
 from datetime import datetime
 
 
-
-
-# All the connections between keypoints
-EDGES = {
-	(0, 1): 'm',
-	(0, 2): 'c',
-	(1, 3): 'm',
-	(2, 4): 'c',
-	(0, 5): 'm',
-	(0, 6): 'c',
-	(5, 7): 'm',
-	(7, 9): 'm',
-	(6, 8): 'c',
-	(8, 10): 'c',
-	(5, 6): 'y',
-	(5, 11): 'm',
-	(6, 12): 'c',
-	(11, 12): 'y',
-	(11, 13): 'm',
-	(13, 15): 'm',
-	(12, 14): 'c',
-	(14, 16): 'c',
-}
-
-# Variables
-edge_color =  (0,0,255) #Red
-point_color = (0,255,0) #Green
-
-# Draw the keypoints as circles in the frame
-def draw_keypoints(frame, keypoints, confidence_threshold):
-	y, x, c = frame.shape
-	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
-	for kp in shaped_array:
-		ky, kx, kp_conf = kp
-		if kp_conf > confidence_threshold:
-			cv2.circle(frame, (int(kx), int(ky)), 4, point_color, -1)
-
-
-# Draw the edges between the coordinates
-def draw_connections(frame, keypoints, edges, confidence_threshold):
-	y, x, c = frame.shape
-	shaped_array = np.squeeze(np.multiply(keypoints, [y,x,1]))
-	for edge, color in edges.items(): 
-		p1, p2 = edge
-		y1, x1, c1 = shaped_array[p1]
-		y2, x2, c2 = shaped_array[p2]
-		if (c1 > confidence_threshold) & (c2 > confidence_threshold):
-			cv2.line(frame, (int(x1),int(y1)), (int(x2),int(y2)), edge_color, 2)
 
 
 # Initialize left and right CSI cameras using GStreamer
