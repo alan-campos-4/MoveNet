@@ -136,10 +136,10 @@ if __name__ == '__main__':
 				)
 				
 				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32*MAX_DISP) )
+				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=1.0).cpu()
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
-				draw_img = arr_l_rect.copy()
 				
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
@@ -147,6 +147,8 @@ if __name__ == '__main__':
 
 				cx = 240
 				cy = 135
+				
+				draw_img = disp_arr.copy()
 				
 				# Image size for keypoint mapping
 				h, w = draw_img.shape[:2]
@@ -160,7 +162,7 @@ if __name__ == '__main__':
 					y = int(y_norm * h)
 					if 0 <= x < w and 0 <= y < h:
 						# Get disparity value at keypoint location
-						disparity_val = disp_arr[y, x]
+						disparity_val = disp_raw[y, x] / 32.0
 						if disparity_val > 0:
 							# Calculate depth (z), and 3D coordinates (X, Y)
 							z = (baseline * focal_length) / disparity_val
@@ -181,13 +183,8 @@ if __name__ == '__main__':
 				draw_connections(draw_img, keypoints_l, EDGES, 0.4)
 				draw_keypoints(draw_img, keypoints_r, 0.4)
 				
-				# Resize outputs for display
-				disp_show = cv2.resize(disp_arr, (640, 360))
-				pose_show = cv2.resize(draw_img, (640, 360))
-				
 				# Show both disparity and pose estimation results
-				cv2.imshow("Disparity", disp_show)
-				cv2.imshow("Pose Estimation", pose_show)
+				cv2.imshow("Pose Estimation with Depth", draw_img)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
