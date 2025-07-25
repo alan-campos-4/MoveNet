@@ -139,6 +139,7 @@ if __name__ == '__main__':
 				)
 				
 				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32*MAX_DISP) )
+				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=1.0).cpu()
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
@@ -149,6 +150,8 @@ if __name__ == '__main__':
 
 				cx = 240
 				cy = 135
+				
+				draw_img = disp_arr.copy()
 				
 				# Image size for keypoint mapping
 				h, w = draw_img.shape[:2]
@@ -162,7 +165,7 @@ if __name__ == '__main__':
 					y = int(y_norm * h)
 					if 0 <= x < w and 0 <= y < h:
 						# Get disparity value at keypoint location
-						disparity_val = disp_arr[y, x]
+						disparity_val = disp_raw[y, x] / 32.0
 						if disparity_val > 0:
 							# Calculate depth (z), and 3D coordinates (X, Y)
 							z = (baseline * focal_length) / disparity_val
@@ -178,8 +181,6 @@ if __name__ == '__main__':
 								print(f"[Left Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
 							elif idx == 8:
 								print(f"[Right Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
-
-				draw_img = disp_arr.copy()
 				
 				# Draw skeleton on frame
 				draw_connections(draw_img, keypoints_l, EDGES, 0.4)
