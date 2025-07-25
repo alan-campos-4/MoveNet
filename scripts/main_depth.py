@@ -1,7 +1,4 @@
-import os
 import sys
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # turns off different numerical values due to rounding errors
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # enables more tf instructions in operations
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pose_estimation import *
 from pipeline import gstreamer_pipeline
