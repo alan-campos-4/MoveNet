@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
         # Optional: resize for display if needed
         frame0_ud = cv2.resize(frame0_ud, (640, 540))
-        frame1_ud = cv2.resize(frame1_ud, (960, 540))
+        frame1_ud = cv2.resize(frame1_ud, (640, 540))
 
         # Combine the frames horizontally
         combined = np.hstack((frame0_ud, frame1_ud))

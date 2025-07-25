@@ -136,8 +136,8 @@ if __name__ == '__main__':
 					#time.sleep(0.05)
 				
 				# RGB -> GRAY
-				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
-				arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
+				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
+				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				
 				# Rectify
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
 				draw_img = disp_arr.copy()
 				
 				# Prepare input for MoveNet from left rectified frame
-				frame_rgb = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
+				frame_rgb = arr_l_rect.copy()
 				input_image = tf.image.resize_with_pad(np.expand_dims(frame_rgb, axis=0), 256, 256)
 				input_image = tf.cast(input_image, dtype=tf.float32) / 255.0
 				
@@ -208,6 +208,11 @@ if __name__ == '__main__':
 							z = (baseline * focal_length) / disparity_val
 							X = (x - cx) * z / focal_length
 							Y = (y - cy) * z / focal_length
+<<<<<<< HEAD
+							label = f"x:{X:.2f}m, y:{Y:.2f}m, z:{z:.2f}m"
+							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
+							cv2.putText(frame_rgb, label, (x + 5, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
+=======
 				
 							# Print only elbow keypoints (left = 7, right = 8)
 							if idx == 7:
@@ -217,6 +222,7 @@ if __name__ == '__main__':
 				
 							# Optionally draw keypoint as a green dot (lightweight)
 							cv2.circle(draw_img, (x, y), 4, (0, 255, 0), -1)
+>>>>>>> 56c76f41689f9c816155cfcceadbb26049836025
 				
 				# Draw skeleton on frame
 				draw_connections(draw_img, keypoints, EDGES, 0.4)
