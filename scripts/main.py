@@ -10,9 +10,9 @@ import numpy as np
 import tensorflow as tf
 
 
-
-
-
+"""		main.py
+Basic test for pose estimation.
+"""
 
 
 
