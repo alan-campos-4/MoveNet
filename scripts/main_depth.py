@@ -105,9 +105,6 @@ if __name__ == '__main__':
 	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
 	interpreter.allocate_tensors()
 	
-	input_details = interpreter.get_input_details()
-	output_details = interpreter.get_output_details()
-	
 	map_l, map_r = get_calibration()
 	cam_l = CameraThread(0)
 	cam_r = CameraThread(1)
@@ -142,6 +139,27 @@ if __name__ == '__main__':
 				# Rectify
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
 				arr_r_rect = cv2.remap(arr_r, *map_r, cv2.INTER_LANCZOS4)
+
+				# Reshape image
+				img_l = arr_l_rect.copy()
+				img_r = arr_r_rect.copy()
+				input_image_l = tf.image.resize_with_pad(np.expand_dims(img_l, axis=0), 256, 256)
+				input_image_r = tf.image.resize_with_pad(np.expand_dims(img_r, axis=0), 256, 256)
+				input_image_l = tf.cast(input_image_l, dtype=tf.float32) / 255.0
+				input_image_r = tf.cast(input_image_r, dtype=tf.float32) / 255.0
+
+				# Setup input and output
+				input_details_l = interpreter.get_input_details()
+				input_details_r = interpreter.get_input_details()
+				output_details_l = interpreter.get_output_details()
+				output_details_r = interpreter.get_output_details()
+	
+				# Make predictions
+				interpreter.set_tensor(input_details_l[0]['index'], np.array(input_image_l))
+				interpreter.set_tensor(input_details_r[0]['index'], np.array(input_image_r))
+				interpreter.invoke()
+				keypoints_l = interpreter.get_tensor(output_details_l[0]['index'])
+				keypoints_r = interpreter.get_tensor(output_details_r[0]['index'])
 				
 				# Apply slight Gaussian blur to reduce high-frequency noise
 				arr_l_rect = cv2.GaussianBlur(arr_l_rect, (3, 3), 0)
@@ -167,21 +185,11 @@ if __name__ == '__main__':
 					maxdisp = MAX_DISP,
 				)
 				
-				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP)).cpu()
-				disp_vis = cv2.medianBlur(disp_raw, 5)
-				disp_arr = cv2.applyColorMap(disp_vis, cv2.COLORMAP_TURBO)
-
+				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32*MAX_DISP) )
+				disp_arr = disparity_8bpp.cpu()
+				disp_arr = cv2.medianBlur(disp_arr, 5)
+				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 				draw_img = disp_arr.copy()
-				
-				# Prepare input for MoveNet from left rectified frame
-				frame_rgb = arr_l_rect.copy()
-				input_image = tf.image.resize_with_pad(np.expand_dims(frame_rgb, axis=0), 256, 256)
-				input_image = tf.cast(input_image, dtype=tf.float32) / 255.0
-				
-				# Run MoveNet inference
-				interpreter.set_tensor(input_details[0]['index'], input_image.numpy())
-				interpreter.invoke()
-				keypoints = np.squeeze(interpreter.get_tensor(output_details[0]['index']))
 				
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
@@ -191,28 +199,27 @@ if __name__ == '__main__':
 				cy = 135
 				
 				# Image size for keypoint mapping
-				h, w = frame_rgb.shape[:2]
+				h, w = draw_img.shape[:2]
 				
 				# Iterate over each keypoint to calculate 3D position using disparity
 				# (Only print elbows for performance)
-				for idx, (y_norm, x_norm, conf) in enumerate(keypoints):
+				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
 					if conf < 0.4:
 						continue
 					x = int(x_norm * w)
 					y = int(y_norm * h)
 					if 0 <= x < w and 0 <= y < h:
 						# Get disparity value at keypoint location
-						disparity_val = disp_raw[y, x]
+						disparity_val = disp_arr[y, x]
 						if disparity_val > 0:
 							# Calculate depth (z), and 3D coordinates (X, Y)
 							z = (baseline * focal_length) / disparity_val
 							X = (x - cx) * z / focal_length
 							Y = (y - cy) * z / focal_length
-<<<<<<< HEAD
+							
 							label = f"x:{X:.2f}m, y:{Y:.2f}m, z:{z:.2f}m"
-							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
-							cv2.putText(frame_rgb, label, (x + 5, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
-=======
+							cv2.circle(draw_img, (x, y), 4, (0, 255, 0), -1)
+							cv2.putText(draw_img, label, (x + 5, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
 				
 							# Print only elbow keypoints (left = 7, right = 8)
 							if idx == 7:
@@ -220,13 +227,9 @@ if __name__ == '__main__':
 							elif idx == 8:
 								print(f"[Right Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
 				
-							# Optionally draw keypoint as a green dot (lightweight)
-							cv2.circle(draw_img, (x, y), 4, (0, 255, 0), -1)
->>>>>>> 56c76f41689f9c816155cfcceadbb26049836025
-				
 				# Draw skeleton on frame
-				draw_connections(draw_img, keypoints, EDGES, 0.4)
-				draw_keypoints(draw_img, keypoints, 0.4)
+				draw_connections(draw_img, keypoints_l, EDGES, 0.4)
+				draw_keypoints(draw_img, keypoints_r, 0.4)
 				
 				# Resize outputs for display
 				disp_show = cv2.resize(disp_arr, (640, 360))
