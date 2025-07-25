@@ -112,22 +112,27 @@ if __name__ == '__main__':
 	cam_l = CameraThread(0)
 	cam_r = CameraThread(1)
 	
-	time.sleep(0.5)
-	for _ in range(5):
-		_ = cam_l.image
-		_ = cam_r.image
-		time.sleep(0.05)
-	frame_l = cam_l.image
-	frame_r = cam_r.image
+	#time.sleep(0.5)
+	#for _ in range(5):
+		#_ = cam_l.image
+		#_ = cam_r.image
+		#time.sleep(0.05)
+	#frame_l = cam_l.image
+	#frame_r = cam_r.image
+
+	print("Waiting for the first valid frames from the cameras...")
+	while cam_l.image is None or cam_r.image is None:
+    		time.sleep(0.01)
+	print("Frames received. Starting the application.")
 	
 	try:
 		with vpi.Backend.CUDA:
 			while True:
 				arr_l = cam_l.image
 				arr_r = cam_r.image
-				for _ in range(5):
-					_ = cam_l.image
-					_ = cam_r.image
+				#for _ in range(5):
+					#_ = cam_l.image
+					#_ = cam_r.image
 					#time.sleep(0.05)
 				
 				# RGB -> GRAY
@@ -161,11 +166,10 @@ if __name__ == '__main__':
 					window = WINDOW_SIZE,
 					maxdisp = MAX_DISP,
 				)
-				disparity_8bpp = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP) )
 				
-				disp_arr = disparity_8bpp.cpu()
-				disp_arr = cv2.medianBlur(disp_arr, 5)
-				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
+				disp_raw = disparity_16bpp.convert(vpi.Format.U8, scale=255.0 / (32 * MAX_DISP)).cpu().copy()
+				disp_vis = cv2.medianBlur(disp_raw, 5)
+				disp_arr = cv2.applyColorMap(disp_vis, cv2.COLORMAP_TURBO)
 				
 				# Prepare input for MoveNet from left rectified frame
 				frame_rgb = cv2.cvtColor(arr_l_rect, cv2.COLOR_GRAY2BGR)
@@ -180,6 +184,9 @@ if __name__ == '__main__':
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
 				focal_length = 580	# Focal length in pixels (from calibration)
+
+				cx = 240
+				cy = 135
 				
 				# Image size for keypoint mapping
 				h, w = frame_rgb.shape[:2]
@@ -191,23 +198,27 @@ if __name__ == '__main__':
 					x = int(x_norm * w)
 					y = int(y_norm * h)
 					if 0 <= x < w and 0 <= y < h:
-						disparity_val = disp_arr[y, x][0]  # Use red channel from colormap
+						disparity_val = disp_raw[y, x]  # Use raw disparity value (single channel)
 						if disparity_val > 0:
-							depth = (baseline * focal_length) / disparity_val
+							z = (baseline * focal_length) / disparity_val
+							X = (x - cx) * z / focal_length
+							Y = (y - cy) * z / focal_length
+							label = f"x:{X:.2f}m, y:{Y:.2f}m, z:{z:.2f}m"
 							cv2.circle(frame_rgb, (x, y), 4, (0, 255, 0), -1)
-							cv2.putText(frame_rgb, f"{depth:.2f}m", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+							cv2.putText(frame_rgb, label, (x + 5, y - 10),
+							        cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
 				
 				# Draw skeleton on frame
 				draw_connections(frame_rgb, keypoints, EDGES, 0.4)
 				draw_keypoints(frame_rgb, keypoints, 0.4)
 				
 				# Resize outputs for display
-				disp_vis = cv2.resize(disp_arr, (640, 360))
-				pose_vis = cv2.resize(frame_rgb, (640, 360))
+				disp_show = cv2.resize(disp_arr, (640, 360))
+				pose_show = cv2.resize(frame_rgb, (640, 360))
 				
 				# Show both disparity and pose estimation results
-				cv2.imshow("Disparity", disp_vis)
-				cv2.imshow("Pose Estimation", pose_vis)
+				cv2.imshow("Disparity", disp_show)
+				cv2.imshow("Pose Estimation", pose_show)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
