@@ -142,7 +142,6 @@ if __name__ == '__main__':
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
-				draw_img = arr_l_rect.copy()
 				
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
@@ -179,18 +178,15 @@ if __name__ == '__main__':
 								print(f"[Left Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
 							elif idx == 8:
 								print(f"[Right Elbow] x: {X:.2f} m, y: {Y:.2f} m, z: {z:.2f} m")
+
+				draw_img = disp_arr.copy()
 				
 				# Draw skeleton on frame
 				draw_connections(draw_img, keypoints_l, EDGES, 0.4)
 				draw_keypoints(draw_img, keypoints_r, 0.4)
 				
-				# Resize outputs for display
-				disp_show = cv2.resize(disp_arr, (640, 360))
-				pose_show = cv2.resize(draw_img, (640, 360))
-				
 				# Show both disparity and pose estimation results
-				cv2.imshow("Disparity", disp_show)
-				cv2.imshow("Pose Estimation", pose_show)
+				cv2.imshow("Pose Estimation with Depth", draw_img)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 				
