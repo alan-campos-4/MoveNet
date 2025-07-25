@@ -1,8 +1,8 @@
 
-def gstreamer_pipeline(sensor_id, width=1280, height=720):
+def gstreamer_pipeline(sensor_id, width=1280, height=720, framerate=60):
     return (
         f"nvarguscamerasrc sensor_id={sensor_id} ! "
-        f"video/x-raw(memory:NVMM), width={width}, height={height}, framerate=30/1 ! "
+        f"video/x-raw(memory:NVMM), width={width}, height={height}, framerate={framerate}/1 ! "
         "nvvidconv flip-method=2 ! "
         "video/x-raw, format=BGRx ! "
         "videoconvert ! "

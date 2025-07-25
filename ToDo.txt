@@ -1,4 +1,13 @@
-	1.	Run MoveNet on the RGB image from both cameras.
-	2.	Extract the keypoints.
-	3.	Match the coordinates of these keypoints with the corresponding locations in the disparity map.
-	4.	Estimate the depth/distance at these keypoints using the disparity values.
+
+
+Quantitative Approach
+- Meassure position and distance of each point (x, y, z)
+- Write the frecuency of each frame
+- Compare between files
+
+
+
+
+
+
+

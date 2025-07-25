@@ -71,18 +71,15 @@ class CameraThread(Thread):
 		self._should_run = True
 		self._image = None
 		self.start()
-	
 	def run(self):
 		while self._should_run:
 			ret,frame = self._cap.read()
 			if ret:
 				self._image = frame
-	
 	@property
 	def image(self):
 		# NOTE: if we care about atomicity of reads, we can add a lock here
 		return self._image
-	
 	def stop(self):
 		self._should_run = False
 		self._cap.release()
@@ -131,7 +128,7 @@ if __name__ == '__main__':
 				for _ in range(5):
 					_ = cam_l.image
 					_ = cam_r.image
-					time.sleep(0.05)
+					#time.sleep(0.05)
 				
 				# RGB -> GRAY
 				arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)

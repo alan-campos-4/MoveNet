@@ -103,6 +103,7 @@ class CameraThread(Thread):
 """ Get the calibration parameters from the file """
 def get_calibration() -> tuple:
 	data = np.load("params/disp_params_rectified.npz")
+	
 	map_l = (data["map1_l"], data["map2_l"])
 	map_r = (data["map1_r"], data["map2_r"])
 	return map_l, map_r
