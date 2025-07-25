@@ -142,7 +142,7 @@ if __name__ == '__main__':
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
-				draw_img = disp_arr.copy()
+				draw_img = arr_l_rect.copy()
 				
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
