@@ -143,6 +143,11 @@ if __name__ == '__main__':
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
 
+				test_x = disp_raw.shape[1] // 2
+				test_y = disp_raw.shape[0] // 2
+				test_disp = disp_raw[test_y, test_x] / 32.0
+				print(f"[Test] Center disparity at ({test_x},{test_y}) = {test_disp:.2f}")
+
 				# Image sizes
 				input_h, input_w = 256, 256  # MoveNet input size
 				disp_h, disp_w = disp_arr.shape[:2]  # Disparity map size (270x480)
@@ -158,11 +163,15 @@ if __name__ == '__main__':
 				
 				# Image size for keypoint mapping
 				h, w = draw_img.shape[:2]
-				
+
+				print("\n--- Keypoint confidence values ---")
+				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
+					print(f"[{idx}] confidence: {conf:.2f}")
+	
 				# Iterate over each keypoint to calculate 3D position using disparity
 				# (Only print elbows for performance)
 				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
-					if conf < 0.4:
+					if conf < 0.1:
 						continue
 					x_model = x_norm * input_w
     					y_model = y_norm * input_h
@@ -174,7 +183,7 @@ if __name__ == '__main__':
 						# Get disparity value at keypoint location
 						disparity_val = disp_raw[y, x] / 32.0
 
-						print(f"[DEBUG] Keypoint {idx} @ ({x},{y}) → disparity={disparity_val:.2f}")
+						print(f"[KP {idx}] x_norm: {x_norm:.2f}, y_norm: {y_norm:.2f} → pixel: ({x},{y}), disparity: {disparity_val:.2f}")
 						
 						if disparity_val > 0:
 							# Calculate depth (z), and 3D coordinates (X, Y)
