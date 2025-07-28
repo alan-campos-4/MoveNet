@@ -1,6 +1,5 @@
 import cv2 as cv
 import numpy as np
-from matplotlib import pyplot as plt
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline

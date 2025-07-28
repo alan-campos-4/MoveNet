@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 # --- CONFIG: paths to your param file and example images ---
 PARAM_FILE =	"params/stereo_params_undistort.npz"
-LEFT_EXAMPLE =	"img/captures/left_1.png"
-RIGHT_EXAMPLE = "img/captures/right_1.png"
-OUTPUT_DIR =	"img/output_rectify_vis"
+LEFT_EXAMPLE =	"output/captures/left_1.png"
+RIGHT_EXAMPLE = "output/captures/right_1.png"
+OUTPUT_DIR =	"output/output_rectify_vis"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

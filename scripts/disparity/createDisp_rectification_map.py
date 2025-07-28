@@ -13,8 +13,8 @@ objp = np.zeros((GRID_SHAPE[0]*GRID_SHAPE[1],3), np.float32)
 objp[:,:2] = np.mgrid[0:GRID_SHAPE[0], 0:GRID_SHAPE[1]].T.reshape(-1,2)
 objp *= 20 # One square on my grid has 20mm
 
-folder_right = "img/captures_alt/right/"
-folder_left =  "img/captures_alt/left/"
+folder_right = "output/captures_alt/right/"
+folder_left =  "output/captures_alt/left/"
 
 # Load parameters
 (K_l, K_r, dist_l, dist_r) = np.load("K_l.npy"), np.load("K_r.npy"), np.load("dist_coeff_l.npy"), np.load("dist_coeff_r.npy")

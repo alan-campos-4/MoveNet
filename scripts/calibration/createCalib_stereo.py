@@ -18,8 +18,8 @@ imgpointsL = []     # 2d points in left image plane
 imgpointsR = []     # 2d points in right image plane
 
 # Load all calibration images from disk
-images_left	=  sorted(glob.glob('img/captures/left_*.png'))
-images_right = sorted(glob.glob('img/captures/right_*.png'))
+images_left	=  sorted(glob.glob('output/captures/left_*.png'))
+images_right = sorted(glob.glob('output/captures/right_*.png'))
 
 imgL = 0
 imgR = 0

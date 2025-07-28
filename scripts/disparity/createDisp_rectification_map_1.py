@@ -32,8 +32,8 @@ imgpointsR = [] # 2D points right
 os.makedirs("img/output", exist_ok=True)
 
 # Load image file lists
-targetL = sorted(glob.glob("img/captures/left_*.png"))
-targetR = sorted(glob.glob("img/captures/right_*.png"))
+targetL = sorted(glob.glob("output/captures/left_*.png"))
+targetR = sorted(glob.glob("output/captures/right_*.png"))
 
 #Process each image pair
 for idx, (fL, fR) in enumerate(zip(targetL, targetR)):

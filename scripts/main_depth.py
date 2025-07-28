@@ -1,7 +1,8 @@
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
-from pose_estimation import *
 from pipeline import gstreamer_pipeline
+from camera_thread import *
+from pose_estimation import *
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -9,42 +10,6 @@ import vpi
 import time
 from threading import Thread
 from datetime import datetime
-
-
-
-
-# Initialize left and right CSI cameras using GStreamer
-class CameraThread(Thread):
-	def __init__(self, sensor_id) -> None:
-		super().__init__()
-		self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_GSTREAMER)
-		self._should_run = True
-		self._image = None
-		self.start()
-	def run(self):
-		while self._should_run:
-			ret,frame = self._cap.read()
-			if ret:
-				self._image = frame
-	@property
-	def image(self):
-		# NOTE: if we care about atomicity of reads, we can add a lock here
-		return self._image
-	def stop(self):
-		self._should_run = False
-		self._cap.release()
-
-
-def get_calibration() -> tuple:
-	data = np.load("params/disp_params_rectified.npz")
-	map_l = (data["map1_l"], data["map2_l"])
-	map_r = (data["map1_r"], data["map2_r"])
-	return map_l, map_r
-
-
-MAX_DISP = 128
-WINDOW_SIZE	= 10
-
 
 
 
@@ -69,7 +34,7 @@ if __name__ == '__main__':
 
 	print("Waiting for the first valid frames from the cameras...")
 	while cam_l.image is None or cam_r.image is None:
-    		time.sleep(0.01)
+			time.sleep(0.01)
 	print("Frames received. Starting the application.")
 	
 	try:
@@ -172,12 +137,20 @@ if __name__ == '__main__':
 				# (Only print elbows for performance)
 				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
 					if conf < 0.1:
+<<<<<<< HEAD
+						continue	
+					x_model = x_norm * input_w
+					y_model = y_norm * input_h
+					x = int(x_model * disp_w / input_w)
+					y = int(y_model * disp_h / input_h)
+=======
 						continue
 					x_model = x_norm * input_w
     					y_model = y_norm * input_h
 
 					x = int(x_model * disp_w / input_w)
     					y = int(y_model * disp_h / input_h)
+>>>>>>> 937f0f19de649644acbbb1c81f2a41c7aceeac8c
 					
 					if 0 <= x < disp_w and 0 <= y < disp_h:
 						# Get disparity value at keypoint location

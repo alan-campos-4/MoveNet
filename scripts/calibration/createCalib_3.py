@@ -30,8 +30,8 @@ imgpointsR = []
 os.makedirs("img/output", exist_ok=True)
 
 # Load image file names
-imagesL = sorted(glob.glob("img/captures/left_*.png"))
-imagesR = sorted(glob.glob("img/captures/right_*.png"))
+imagesL = sorted(glob.glob("output/captures/left_*.png"))
+imagesR = sorted(glob.glob("output/captures/right_*.png"))
 
 for idx, (lpath, rpath) in enumerate(zip(imagesL, imagesR)):
     imgL = cv2.imread(lpath, cv2.IMREAD_GRAYSCALE)

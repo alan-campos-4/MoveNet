@@ -23,8 +23,8 @@ objpoints =  []
 imgpointsL = []
 imgpointsR = []
 
-imagesL = sorted(glob.glob("img/captures/left_*.png"))
-imagesR = sorted(glob.glob("img/captures/right_*.png"))
+imagesL = sorted(glob.glob("output/captures/left_*.png"))
+imagesR = sorted(glob.glob("output/captures/right_*.png"))
 
 for imgL_path, imgR_path in zip(imagesL, imagesR):
     imgL = cv2.imread(imgL_path, cv2.IMREAD_GRAYSCALE)

@@ -22,10 +22,10 @@ objpoints = []
 imgpointsL = []
 imgpointsR = []
 
-imagesL = sorted(glob.glob("img/captures/left_*.png"))
-imagesR = sorted(glob.glob("img/captures/right_*.png"))
-imgL = cv2.imread("img/captures/right_1.png",0)
-imgR = cv2.imread("img/captures/right_1.png",0)
+imagesL = sorted(glob.glob("output/captures/left_*.png"))
+imagesR = sorted(glob.glob("output/captures/right_*.png"))
+imgL = cv2.imread("output/captures/right_1.png",0)
+imgR = cv2.imread("output/captures/right_1.png",0)
 
 for imgL_path, imgR_path in zip(imagesL, imagesR):
     imgL = cv2.imread(imgL_path, 0)

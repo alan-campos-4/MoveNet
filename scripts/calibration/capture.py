@@ -6,7 +6,7 @@ sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline 
 
 
-os.makedirs("img/captures", exist_ok=True)
+os.makedirs("output/captures", exist_ok=True)
 
 capL = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
 capR = cv2.VideoCapture(gstreamer_pipeline(1), cv2.CAP_GSTREAMER)
@@ -25,8 +25,8 @@ while True:
 
     key = cv2.waitKey(1)
     if key == ord('c'):  # capture
-        cv2.imwrite(f"img/captures/left_{counter}.png", frameL)
-        cv2.imwrite(f"img/captures/right_{counter}.png", frameR)
+        cv2.imwrite(f"output/captures/left_{counter}.png", frameL)
+        cv2.imwrite(f"output/captures/right_{counter}.png", frameR)
         counter += 1
         print("Captured image pair", counter)
     elif key == ord('q'):

@@ -35,9 +35,9 @@ os.makedirs("img/output", exist_ok=True)
 MIN_PAIRS = 10
 
 # Ensure captures folder exists and consistent image counts
-assert os.path.isdir("img/captures"), "Error: captures folder not found."
-imagesL = sorted(glob.glob("img/captures/left_*.png"))
-imagesR = sorted(glob.glob("img/captures/right_*.png"))
+assert os.path.isdir("output/captures"), "Error: captures folder not found."
+imagesL = sorted(glob.glob("output/captures/left_*.png"))
+imagesR = sorted(glob.glob("output/captures/right_*.png"))
 assert len(imagesL) == len(imagesR), (
     f"Error: unmatched counts L={len(imagesL)}, R={len(imagesR)}."
 )

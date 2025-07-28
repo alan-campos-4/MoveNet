@@ -15,7 +15,7 @@ Meassures the framerate of a cameras while performing pose estimation.
 
 
 if __name__ == '__main__':
-	
+
 	# Opens the camera
 	cap = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
 	if (cap.isOpened()==False):
