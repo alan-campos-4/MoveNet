@@ -182,7 +182,7 @@ if __name__ == '__main__':
 			        disp_raw = disparity_16bpp.cpu().view(np.ndarray)
 			        
 			        for i, (x, y, conf) in enumerate(keypoints):
-			            if conf > 0.1:
+			            if conf > 0.2:
 			                x_disp = int(x / 256 * disp_raw.shape[1])
 			                y_disp = int(y / 256 * disp_raw.shape[0])
 			        
@@ -195,14 +195,13 @@ if __name__ == '__main__':
 			        
 			                        print(f"Keypoint {i} depth: {Z:.1f} cm")
 			                      
-			                        cv2.putText(draw_img, f"{int(Z)}cm", (x_disp, y_disp - 5),
-				            	cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0), 2)
-						cv2.putText(draw_img, f"{int(Z)}cm", (x_disp, y_disp - 5),
-				            	cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
+			                        cv2.circle(draw_img, (x_disp, y_disp), 4, (0, 255, 255), -1)
+                				cv2.putText(draw_img, f"{int(Z)} cm", (x_disp + 5, y_disp - 5),
+                            			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 						
 				cv2.putText(draw_img, "TEST", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 							# Show in one window
-				cv2.imshow("Pose Estimation with Depth", draw_img)
+				cv2.imshow("Depth-annotated keypoints", draw_img)
 
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
