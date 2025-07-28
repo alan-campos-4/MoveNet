@@ -165,41 +165,43 @@ if __name__ == '__main__':
 				
 				
 				""" 5. Estimate the depth/distance at these keypoints using the disparity values. """
-        #data = np.load("params/disp_params_rectified.npz")
-        #K = data["K1"]
-        #print("Focal length (fx):", K[0, 0])
+			        #data = np.load("params/disp_params_rectified.npz")
+			        #K = data["K1"]
+			        #print("Focal length (fx):", K[0, 0])
+			  
+			        #T = data["T"]
+			        #baseline_m = abs(T[0])
+			        #baseline_cm = baseline_m * 100
+			        #print("Baseline:", baseline_cm, "cm")
   
-        #T = data["T"]
-        #baseline_m = abs(T[0])
-        #baseline_cm = baseline_m * 100
-        #print("Baseline:", baseline_cm, "cm")
-  
-        focal_length = 752.90670806571
-        baseline_cm = 7.74058794
-        
-        keypoints = keypoints_0[0][0]
-        
-        disp_raw = disparity_16bpp.cpu().view(np.ndarray)
-        
-        for i, (x, y, conf) in enumerate(keypoints):
-            if conf > 0.4:
-                x_disp = int(x / 256 * disp_raw.shape[1])
-                y_disp = int(y / 256 * disp_raw.shape[0])
-        
-                if 0 <= x_disp < disp_raw.shape[1] and 0 <= y_disp < disp_raw.shape[0]:
-                    disparity_val = disp_raw[y_disp, x_disp]
-        
-                    if disparity_val > 0:
-                        real_disparity = disparity_val / 32.0
-                        Z = (focal_length * baseline_cm) / real_disparity
-        
-                        print(f"Keypoint {i} derinlik: {Z:.1f} cm")
-                      
-                        cv2.putText(draw_img, f"{int(Z)}cm", (x_disp, y_disp - 5),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255), 1)
-				
-				
-				# Show in one window
+			        focal_length = 752.90670806571
+			        baseline_cm = 7.74058794
+			        
+			        keypoints = keypoints_0[0][0]
+			        
+			        disp_raw = disparity_16bpp.cpu().view(np.ndarray)
+			        
+			        for i, (x, y, conf) in enumerate(keypoints):
+			            if conf > 0.1:
+			                x_disp = int(x / 256 * disp_raw.shape[1])
+			                y_disp = int(y / 256 * disp_raw.shape[0])
+			        
+			                if 0 <= x_disp < disp_raw.shape[1] and 0 <= y_disp < disp_raw.shape[0]:
+			                    disparity_val = disp_raw[y_disp, x_disp]
+			        
+			                    if disparity_val > 0:
+			                        real_disparity = disparity_val / 32.0
+			                        Z = (focal_length * baseline_cm) / real_disparity
+			        
+			                        print(f"Keypoint {i} depth: {Z:.1f} cm")
+			                      
+			                        cv2.putText(draw_img, f"{int(Z)}cm", (x_disp, y_disp - 5),
+				            	cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0), 2)
+						cv2.putText(draw_img, f"{int(Z)}cm", (x_disp, y_disp - 5),
+				            	cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
+						
+				cv2.putText(draw_img, "TEST", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+							# Show in one window
 				cv2.imshow("Pose Estimation with Depth", draw_img)
 
 				if cv2.waitKey(1) & 0xFF == ord('q'):
