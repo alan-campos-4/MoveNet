@@ -51,6 +51,14 @@ if __name__ == '__main__':
 				#arr_l = cv2.cvtColor(arr_l, cv2.COLOR_BGR2GRAY)
 				#arr_r = cv2.cvtColor(arr_r, cv2.COLOR_BGR2GRAY)
 				
+				data = np.load('params/disp_params_rectified.npz')
+				K = data['K1']
+				T = data['T']
+				print('Focal length (fx):', K[0,0])
+				baseline_m = abs(T[0])
+				baseline_cm = baseline_m * 100
+				print('Baseline: ', baseline_cm, 'cm')
+				
 				# Rectify
 				arr_l_rect = cv2.remap(arr_l, *map_l, cv2.INTER_LANCZOS4)
 				arr_r_rect = cv2.remap(arr_r, *map_r, cv2.INTER_LANCZOS4)
@@ -137,20 +145,11 @@ if __name__ == '__main__':
 				# (Only print elbows for performance)
 				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
 					if conf < 0.1:
-<<<<<<< HEAD
 						continue	
 					x_model = x_norm * input_w
 					y_model = y_norm * input_h
 					x = int(x_model * disp_w / input_w)
 					y = int(y_model * disp_h / input_h)
-=======
-						continue
-					x_model = x_norm * input_w
-    					y_model = y_norm * input_h
-
-					x = int(x_model * disp_w / input_w)
-    					y = int(y_model * disp_h / input_h)
->>>>>>> 937f0f19de649644acbbb1c81f2a41c7aceeac8c
 					
 					if 0 <= x < disp_w and 0 <= y < disp_h:
 						# Get disparity value at keypoint location

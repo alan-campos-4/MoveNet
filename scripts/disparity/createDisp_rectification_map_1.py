@@ -108,12 +108,12 @@ map1_r, map2_r = cv2.initUndistortRectifyMap(mtxR, distR, R2, P2, (w, h), cv2.CV
 # Save parameters
 os.makedirs("params", exist_ok=True)
 np.savez("params/disp_params_rectified.npz",
-    #K1=mtxL, D1=distL,
-    #K2=mtxR, D2=distR,
+    K1=mtxL, D1=distL,
+    K2=mtxR, D2=distR,
     mtxL=mtxL, distL=distL,
     mtxR=mtxR, distR=distR,
     map1_l=map1_l, map2_l=map2_l,
     map1_r=map1_r, map2_r=map2_r,
-    Q=Q
+    Q=Q, T=T
 )
 print("Calibration data successfully saved.")

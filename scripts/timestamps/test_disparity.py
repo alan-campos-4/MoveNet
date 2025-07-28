@@ -1,14 +1,14 @@
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from camera_thread import *
+from timestamps import *
 import numpy as np
 import cv2
 import time
 
 
-"""		timestamps test 3.py
-Meassures the framerate of two cameras while performing 
-camera feed calibration and disparity calculation
+"""
+Meassures the framerate of a camera while calibrating and creating a disparity map.
 """
 
 
@@ -25,12 +25,13 @@ if __name__ == '__main__':
 	start_time = time.time()
 	frame_count = 0
 	fps = 0
-	fps_rec = []
-	font = cv2.FONT_HERSHEY_PLAIN
+	fps_array = []
+	seconds_passed = 0
+	max_seconds = get_max_seconds()
 	
 	try:
 		with vpi.Backend.CUDA:
-			while True:
+			while seconds_passed < max_seconds:
 				arr_l = cam_l.image
 				arr_r = cam_r.image
 				#arr_l = cv2.undistort(arr_l, K1, D1)
@@ -73,8 +74,9 @@ if __name__ == '__main__':
 				elapsed_time = time.time()-start_time
 				# Calculates the frames per second in the time passed
 				if elapsed_time > 1.0:
+					seconds_passed += 1
 					fps = frame_count / elapsed_time
-					fps_rec.append(fps)
+					fps_array.append(fps)
 					frame_count = 0
 					start_time = time.time()
 				
@@ -83,8 +85,11 @@ if __name__ == '__main__':
 					break
 				
 				# Shows the feed with framerate
-				cv2.putText(disp_arr, str(fps)+' FPS', (20,40), font, 2, (255,255,255), 2, cv2.LINE_AA)
+				show_text(cv2, disp_arr, seconds_passed, max_seconds, fps)
 				cv2.imshow('Timestamps', disp_arr)
+				
+			# Saves the results
+			save_performance(__file__, 'Calibration and disparity', fps_array, max_seconds, cam_l.cap, cam_r.cap)
 				
 	except KeyboardInterrupt as e:
 		print(e)
@@ -92,12 +97,4 @@ if __name__ == '__main__':
 		cam_l.stop()
 		cam_r.stop()
 		cv2.destroyAllWindows()
-	
-	# Saves the results
-	with open("output/timestamps/test_disparity.txt", "w") as f:
-		f.write("Camera calibration and disparity.\n")
-		for fps in fps_rec:
-			f.write(f'FPS: {fps}')
-			f.write('\n')
-	print('Performance saved to file.')
 

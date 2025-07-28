@@ -3,15 +3,14 @@ import sys
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # turns off different numerical values due to rounding errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # enables more tf instructions in operations
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
-from pose_estimation import *
 from pipeline import gstreamer_pipeline
+from camera_thread import *
+from pose_estimation import *
 import cv2
 import numpy as np
 import tensorflow as tf
 import vpi
 import time
-from threading import Thread
-from datetime import datetime
 
 
 
@@ -22,45 +21,6 @@ from datetime import datetime
 	4.	Match the coordinates of these keypoints with the corresponding locations in the disparity map.
 	5.	Estimate the depth/distance at these keypoints using the disparity values.
 """
-
-
-
-""" Initialize left and right CSI cameras using GStreamer """
-class CameraThread(Thread):
-	def __init__(self, sensor_id) -> None:
-		super().__init__()
-		self._cap = cv2.VideoCapture(gstreamer_pipeline(sensor_id), cv2.CAP_GSTREAMER)
-		self._should_run = True
-		self._image = None
-		self.start()
-	def run(self):
-		while self._should_run:
-			ret,frame = self._cap.read()
-			if ret:
-				self._image = frame
-	@property
-	def image(self):
-		# NOTE: if we care about atomicity of reads, we can add a lock here
-		return self._image
-	def stop(self):
-		self._should_run = False
-		self._cap.release()
-
-
-""" Get the calibration parameters from the file """
-def get_calibration() -> tuple:
-	data = np.load("params/disp_params_rectified.npz")
-	
-	map_l = (data["map1_l"], data["map2_l"])
-	map_r = (data["map1_r"], data["map2_r"])
-	return map_l, map_r
-
-
-MAX_DISP = 128
-WINDOW_SIZE	= 11
-
-
-
 
 
 
@@ -165,42 +125,36 @@ if __name__ == '__main__':
 				
 				
 				""" 5. Estimate the depth/distance at these keypoints using the disparity values. """
-			        #data = np.load("params/disp_params_rectified.npz")
-			        #K = data["K1"]
-			        #print("Focal length (fx):", K[0, 0])
-			  
-			        #T = data["T"]
-			        #baseline_m = abs(T[0])
-			        #baseline_cm = baseline_m * 100
-			        #print("Baseline:", baseline_cm, "cm")
-  
-			        focal_length = 752.90670806571
-			        baseline_cm = 7.74058794
-			        
-			        keypoints = keypoints_0[0][0]
-			        
-			        disp_raw = disparity_16bpp.cpu().view(np.ndarray)
-			        
-			        for i, (x, y, conf) in enumerate(keypoints):
-			            if conf > 0.2:
-			                x_disp = int(x * disp_raw.shape[1])
-			                y_disp = int(y * disp_raw.shape[0])
-			        
-			                if 0 <= x_disp < disp_raw.shape[1] and 0 <= y_disp < disp_raw.shape[0]:
-			                    disparity_val = disp_raw[y_disp, x_disp]
-			        
-			                    if disparity_val > 0:
-			                        real_disparity = disparity_val / 32.0
-			                        Z = (focal_length * baseline_cm) / real_disparity
-			        
-			                        print(f"Keypoint {i} depth: {Z:.1f} cm")
-			                      
-			                        cv2.circle(draw_img, (x_disp, y_disp), 4, (0, 255, 255), -1)
-                				cv2.putText(draw_img, f"{int(Z)} cm", (x_disp + 5, y_disp - 5),
-                            			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-						
-				cv2.putText(draw_img, "TEST", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
-							# Show in one window
+				#data = np.load("params/disp_params_rectified.npz")
+				#K = data["K1"]
+				#print("Focal length (fx):", K[0, 0])
+		  
+				#T = data["T"]
+				#baseline_m = abs(T[0])
+				#baseline_cm = baseline_m * 100
+				#print("Baseline:", baseline_cm, "cm")
+		  
+				focal_length = 752.90670806571
+				baseline_cm = 7.74058794
+				
+				keypoints = keypoints_0[0][0]
+				
+				disp_raw = disparity_16bpp.cpu().view(np.ndarray)
+				
+				for i, (x, y, conf) in enumerate(keypoints):
+					if conf > 0.2:
+						x_disp = int(x * disp_raw.shape[1])
+						y_disp = int(y * disp_raw.shape[0])
+						if 0 <= x_disp < disp_raw.shape[1] and 0 <= y_disp < disp_raw.shape[0]:
+							disparity_val = disp_raw[y_disp, x_disp]
+							if disparity_val > 0:
+								real_disparity = disparity_val / 32.0
+								Z = (focal_length * baseline_cm) / real_disparity
+								print(f"Keypoint {i} depth: {Z:.1f} cm")
+								cv2.circle(draw_img, (x_disp, y_disp), 4, (0, 255, 255), -1)
+								cv2.putText(draw_img, f"{int(Z)} cm", (x_disp + 5, y_disp - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+				
+				# Show in one window
 				cv2.imshow("Depth-annotated keypoints", draw_img)
 
 				if cv2.waitKey(1) & 0xFF == ord('q'):

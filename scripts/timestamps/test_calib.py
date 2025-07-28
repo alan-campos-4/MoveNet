@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline
+from timestamps import *
 import numpy as np
 import cv2
 import time
@@ -20,20 +21,13 @@ if __name__ == '__main__':
 		print("Error: couldn't open the camera.")
 		exit()
 	
-	# Establish time limit for test
-	MAX_SECONDS = 20
-	if (len(sys.argv)==2):
-		if (type(sys.argv[1])==type(20)):
-			MAX_SECONDS = int(sys.argv[1])
-	print(f'Test will last for {MAX_SECONDS} seconds')
-	
 	# Meassurement variables
 	start_time = time.time()
-	seconds_passed = 0
 	frame_count = 0
 	fps = 0
-	fps_rec = []
-	font = cv2.FONT_HERSHEY_PLAIN
+	fps_array = []
+	seconds_passed = 0
+	max_seconds = get_max_seconds()
 	
 	# Calibration parameters
 	data = np.load("params/stereo_params_undistort.npz")
@@ -41,7 +35,7 @@ if __name__ == '__main__':
 	D1 = data['D1']
 	
 	try:
-		while seconds_passed < MAX_SECONDS:		
+		while seconds_passed < max_seconds:		
 			ret, frame = cap.read()
 			if not ret:
 				print("Error: can't receive frame.")
@@ -57,31 +51,24 @@ if __name__ == '__main__':
 			if elapsed_time > 1.0:
 				seconds_passed += 1
 				fps = frame_count / elapsed_time
-				fps_rec.append(fps)
+				fps_array.append(fps)
 				frame_count = 0
 				start_time = time.time()
 			
 			# Shows the feed with framerate
-			cv2.putText(frame, f'Second = {seconds_passed} | FPS = {fps}', (20,40), font, 2, (255,255,255), 2, cv2.LINE_AA)
+			show_text(cv2, frame, seconds_passed, max_seconds, fps)
 			cv2.imshow('Timestamps', frame)
 			
 			# Break the loop if the 'Q' key is pressed
 			if cv2.waitKey(10) & 0xFF==ord('q'):
 				break
+			
+		# Saves the results
+		save_performance(__file__, 'Display and calibrate one camera', fps_array, max_seconds, cap)
+		
 	except KeyboardInterrupt as e:
 		print(e)
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()
-		
-	cap.release()
-	cv2.destroyAllWindows()
 	
-	# Saves the results
-	with open("output/timestamps/test_calib.txt", "w") as f:
-		f.write(f"Display and calibration of 1 camera during {MAX_SECONDS}.\n")
-		for fps in fps_rec:
-			f.write(f'FPS: {fps}')
-			f.write('\n')
-	print('Performance saved to file.')
-
