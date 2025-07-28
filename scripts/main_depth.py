@@ -106,9 +106,11 @@ if __name__ == '__main__':
 	
 				# Make predictions
 				interpreter.set_tensor(input_details_l[0]['index'], np.array(input_image_l))
-				interpreter.set_tensor(input_details_r[0]['index'], np.array(input_image_r))
 				interpreter.invoke()
 				keypoints_l = interpreter.get_tensor(output_details_l[0]['index'])
+				
+				interpreter.set_tensor(input_details_r[0]['index'], np.array(input_image_r))
+				interpreter.invoke()
 				keypoints_r = interpreter.get_tensor(output_details_r[0]['index'])
 				
 				# Apply slight Gaussian blur to reduce high-frequency noise
@@ -140,13 +142,17 @@ if __name__ == '__main__':
 				disp_arr = disparity_8bpp.cpu()
 				disp_arr = cv2.medianBlur(disp_arr, 5)
 				disp_arr = cv2.applyColorMap(disp_arr, cv2.COLORMAP_TURBO)
-				
+
+				# Image sizes
+				input_h, input_w = 256, 256  # MoveNet input size
+				disp_h, disp_w = disp_arr.shape[:2]  # Disparity map size (270x480)
+
 				# Depth estimation parameters
 				baseline = 0.1		# Distance between cameras in meters
 				focal_length = 580	# Focal length in pixels (from calibration)
 
-				cx = 240
-				cy = 135
+				cx = disp_w // 2
+				cy = disp_h // 2
 				
 				draw_img = disp_arr.copy()
 				
@@ -158,11 +164,18 @@ if __name__ == '__main__':
 				for idx, (y_norm, x_norm, conf) in enumerate(keypoints_l[0][0]):
 					if conf < 0.4:
 						continue
-					x = int(x_norm * w)
-					y = int(y_norm * h)
-					if 0 <= x < w and 0 <= y < h:
+					x_model = x_norm * input_w
+    					y_model = y_norm * input_h
+
+					x = int(x_model * disp_w / input_w)
+    					y = int(y_model * disp_h / input_h)
+					
+					if 0 <= x < disp_w and 0 <= y < disp_h:
 						# Get disparity value at keypoint location
 						disparity_val = disp_raw[y, x] / 32.0
+
+						print(f"[DEBUG] Keypoint {idx} @ ({x},{y}) → disparity={disparity_val:.2f}")
+						
 						if disparity_val > 0:
 							# Calculate depth (z), and 3D coordinates (X, Y)
 							z = (baseline * focal_length) / disparity_val
