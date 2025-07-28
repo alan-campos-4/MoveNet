@@ -183,8 +183,8 @@ if __name__ == '__main__':
 			        
 			        for i, (x, y, conf) in enumerate(keypoints):
 			            if conf > 0.2:
-			                x_disp = int(x / 256 * disp_raw.shape[1] / 256)
-			                y_disp = int(y / 256 * disp_raw.shape[0] / 266)
+			                x_disp = int(x * disp_raw.shape[1])
+			                y_disp = int(y * disp_raw.shape[0])
 			        
 			                if 0 <= x_disp < disp_raw.shape[1] and 0 <= y_disp < disp_raw.shape[0]:
 			                    disparity_val = disp_raw[y_disp, x_disp]
