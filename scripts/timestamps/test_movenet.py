@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	D1 = data['D1']
 	
 	# Loads the model from the file.
-	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
+	interpreter = tf.lite.Interpreter(model_path='models/movenet-lightning.tflite')
 	interpreter.allocate_tensors()
 	
 	try:
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 			
 			# Reshape image
 			img = frame.copy()
-			img = tf.image.resize_with_pad(np.expand_dims(img, axis=0), 256, 256)
+			img = tf.image.resize_with_pad(np.expand_dims(img, axis=0), 192, 192)
 			input_image = tf.cast(img, dtype=tf.float32)
 			
 			# Setup input and output
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 			# Break the loop if the 'Q' key is pressed
 			if cv2.waitKey(10) & 0xFF==ord('q'):
 				break
-		
+			
 		# Saves the results
 		save_performance(__file__, 'Calibration and pose estimation', fps_array, max_seconds, cap)
 		
