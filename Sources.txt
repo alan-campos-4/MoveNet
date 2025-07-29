@@ -1,0 +1,3 @@
+https://forums.developer.nvidia.com/t/human-pose-detection-model-movenet-tensorrt-conversion-on-nvidia-jetson/215926
+
+https://forums.developer.nvidia.com/t/wrong-results-when-i-convert-movenet-models-from-onnx-to-tensorrt/255990?utm_source=chatgpt.com
