@@ -74,6 +74,8 @@ After creating virtual environment with opencv:
 
 
 #### TensorFlow with Nvidia ####
+
+
 After creating virtual environment with opencv:
  pip install numpy
  pip install wheel
@@ -89,11 +91,15 @@ After creating virtual environment with opencv:
 
 bashrc:
   export LD_PRELOAD=/lib/aarch64-linux-gnu/libGLdispatch.so.0
-  
 
 
+From https://docs.nvidia.com/deeplearning/frameworks/install-tf-jetson-platform/index.html
+$ pip3 install --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v512 tensorflow==2.12.0+nv23.06
 
+From https://docscontent.nvidia.com/dita/00000186-9b5d-d03c-a987-9b7d18130000/deeplearning/frameworks/pdf/Install-TensorFlow-Jetson-Platform.pdf
+$ pip3 install --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v502 tensorflow-gpu==2.9.1+nv22.09
 
+From script
 
 
 

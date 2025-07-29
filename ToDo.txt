@@ -1,10 +1,20 @@
 
 
 Quantitative Approach
-- Meassure position and distance of each point (x, y, z)
-- Write the frecuency of each frame
-- Compare between files
+- [¬/] Meassure position and distance of each point (x, y, z)
+- [¬/] Write the frecuency of each frame
+- [¬/] Compare between files 
 
+
+Change TensorFlow to use GPU
+- OpenCV with CUDA: NO ??
+- JetPack: Missing ??
+
+
+
+Scripts used for OpenCV+CUDA:
+https://github.com/Hexerpowers/Install-OpenCV-Jetson-Xavier/raw/main/OpenCV-4-5-4.sh
+https://forums.developer.nvidia.com/t/best-way-to-install-opencv-with-cuda-on-jetpack-5-xavier-nx-opencv-for-tegra/222777
 
 
 

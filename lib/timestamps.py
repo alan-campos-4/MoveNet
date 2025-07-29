@@ -6,8 +6,9 @@ import os
 def save_performance(filepath, message, fps_array, max_seconds, cap0, cap1=None):
 	file_name = os.path.basename(filepath)
 	filename = file_name.split('.')[0]
+	total = 0
 	print('Saving...')
-	with open(f"output/timestamps/{filename}", "w") as f:
+	with open(f"output/timestamps/{filename}.txt", "w") as f:
 		f.write("Camera 0 parameters\n")
 		f.write(f" - Width  {cap0.get(3)}\n")
 		f.write(f" - Height {cap0.get(4)}\n")
@@ -23,7 +24,7 @@ def save_performance(filepath, message, fps_array, max_seconds, cap0, cap1=None)
 			f.write(f"{fps}\n")
 			total += fps
 		avg = total / len(fps_array)
-		print(f"Average FPS = {avg}")
+		f.write(f"Average FPS = {avg}")
 
 
 	
