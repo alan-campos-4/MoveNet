@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	
 	# TensorFlow logging
 	tf.debugging.set_log_device_placement(True)
-
+	
 	# Opens the camera
 	cap = cv2.VideoCapture(gstreamer_pipeline(0), cv2.CAP_GSTREAMER)
 	if (cap.isOpened()==False):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 	
 	# Loads GPU device
 	with tf.device('/GPU:0'):
-	
+		
 		# Loads the model from the file.
 		interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
 		interpreter.allocate_tensors()
