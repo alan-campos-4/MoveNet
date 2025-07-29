@@ -52,6 +52,7 @@ outputs = session.run(None, {input_name: input_data})
 print("Keypoints:", outputs[0])
 
 
+
 Tip: During runtime, monitor GPU usage using:
 sudo tegrastats
 
