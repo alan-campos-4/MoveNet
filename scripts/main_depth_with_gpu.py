@@ -97,7 +97,7 @@ if __name__ == '__main__':
 				""" 3. Create the disparity map from both cameras. """
 				
 				arr_rect_0 = gpu_preprocess(arr_rect_0)
-        arr_rect_1 = gpu_preprocess(arr_rect_1)
+        			arr_rect_1 = gpu_preprocess(arr_rect_1)
 				
 				# Convert to VPI image
 				vpi_l = vpi.asimage(arr_rect_0)
