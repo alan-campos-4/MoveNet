@@ -6,7 +6,6 @@ sys.path.insert(0, '/home/jetson_0/Documents/MoveNet/lib')
 from pipeline import gstreamer_pipeline
 from camera_thread import *
 from pose_estimation import *
-from tensorflow.python.compiler.tensorrt import trt_convert as trt
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -56,30 +55,15 @@ if __name__ == '__main__':
 		time.sleep(0.05)
 	frame_l = cam_l.image
 	frame_r = cam_r.image
-
-	if not os.path.exists("movenet_trt"):
-		params = trt.DEFAULT_TRT_CONVERSION_PARAMS._replace(
-			precision_mode='FP16',
-			max_workspace_size_bytes=1 << 25
-		)
-
-		converter = trt.TrtGraphConverterV2(
-			input_saved_model_dir="models/movenet-thunder/",
-			conversion_params=params
-		)
-
-		converter.convert()
-		converter.save("movenet_trt")
 	
 	# Load the model from the file
-	model = tf.saved_model.load("movenet_trt")
+	model = tf.saved_model.load("models/movenet-thunder/")
 	
 	# Loads GPU device to do operations
 	with tf.device('/GPU:0'):
 	
 		try:
 			with vpi.Backend.CUDA:
-				frame_count = 0
 				while True:
 					
 					arr_l = cam_l.image
@@ -106,15 +90,14 @@ if __name__ == '__main__':
 					""" 2. Extract the keypoints. """
 					
 					# Make predictions
-					outputs_0 = model.signatures["serving_default"](input_image_0)
-					outputs_1 = model.signatures["serving_default"](input_image_1)
+					outputs_0 = model.signatures["serving_default"](tf.constant(input_image_0))
+					outputs_1 = model.signatures["serving_default"](tf.constant(input_image_1))
 					keypoints_0 = outputs_0["output_0"].numpy()
 					keypoints_1 = outputs_1["output_0"].numpy()
 					
 					
 					""" 3. Create the disparity map from both cameras. """
-				
-				
+					
 					arr_rect_0 = gpu_preprocess(arr_rect_0)
 					arr_rect_1 = gpu_preprocess(arr_rect_1)
 					
@@ -142,8 +125,8 @@ if __name__ == '__main__':
 					""" 4. Match the coordinates of these keypoints with the corresponding locations in the disparity map. """
 					
 					draw_img = disp_arr.copy()
-					draw_connections(draw_img,	keypoints_0, EDGES, 0.4)
-					draw_keypoints(draw_img,	keypoints_1, 0.4)
+					draw_connections(draw_img, keypoints_0, EDGES, 0.4)
+					draw_keypoints(draw_img, keypoints_1, 0.4)
 					
 					
 					""" 5. Estimate the depth/distance at these keypoints using the disparity values. """
@@ -173,14 +156,11 @@ if __name__ == '__main__':
 									real_disparity = disparity_val / 32.0
 									Z = (focal_length * baseline_cm) / real_disparity
 									print(f"Keypoint {i} depth: {Z:.1f} cm")
-									if frame_count % 5 == 0:
-										cv2.circle(draw_img, (x_disp, y_disp), 4, (0, 255, 255), -1)
-										cv2.putText(draw_img, f"{int(Z)} cm", (x_disp + 5, y_disp - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+									cv2.circle(draw_img, (x_disp, y_disp), 4, (0, 255, 255), -1)
+									cv2.putText(draw_img, f"{int(Z)} cm", (x_disp + 5, y_disp - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 					
 					# Show in one window
-					frame_count += 1
-					if frame_count % 5 == 0:
-					    cv2.imshow("Depth-annotated keypoints", draw_img)
+					cv2.imshow("Depth-annotated keypoints", draw_img)
 
 					if cv2.waitKey(1) & 0xFF == ord('q'):
 						break

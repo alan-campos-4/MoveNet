@@ -34,6 +34,12 @@ if __name__ == '__main__':
 	seconds_passed = 0
 	max_seconds = get_max_seconds()
 	
+	# Calibration parameters
+	data = np.load("params/stereo_params_undistort.npz")
+	K1 = data['K1']
+	D1 = data['D1']
+	
+	
 	
 	# Restrict TensorFlow to only allocate a specific amount of GPU memory if necessary
 	gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -55,7 +61,7 @@ if __name__ == '__main__':
 					break
 				
 				# Calibrates the camera
-				#frame = cv2.undistort(frame, K1, D1)
+				frame = cv2.undistort(frame, K1, D1)
 				
 				# Adds the time passed
 				frame_count += 1
@@ -95,7 +101,7 @@ if __name__ == '__main__':
 					break
 				
 			# Saves the results
-			save_performance(__file__, 'Pose estimation', fps_array, max_seconds, cap)
+			save_performance(__file__, 'Calibration and pose estimation', fps_array, max_seconds, cap)
 			
 		except KeyboardInterrupt as e:
 			print(e)

@@ -5,19 +5,32 @@ Quantitative Approach
 - [¬/] Write the frecuency of each frame
 - [¬/] Compare between files 
 
-
-Change TensorFlow to use GPU
-- OpenCV with CUDA: NO ??
-- JetPack: Missing ??
-
-
-
-Scripts used for OpenCV+CUDA:
-https://github.com/Hexerpowers/Install-OpenCV-Jetson-Xavier/raw/main/OpenCV-4-5-4.sh
-https://forums.developer.nvidia.com/t/best-way-to-install-opencv-with-cuda-on-jetpack-5-xavier-nx-opencv-for-tegra/222777
+jtop attributes
+- [¬/] OpenCV with CUDA:	Installed
+- [..] JetPack MISSING:		jtop bug, not recognized
 
 
 
+Current problem: bottleneck
+Average FPS:
+- Regular feed:				55.50
+- Calibration:				7.95
+- Calibration and MoveNet:	3.79
 
 
+
+
+
+Prompts:
+
+I have reComputer J20 with an Nvidia Jetson Xavier NX running Ubuntu 20.04 and Python 3.8.10; and I am trying to use TensorFlow with GPU support. 
+When I use jtop I can see I have 
+L4T 35.6.2
+CUDA 11.4
+cuDNN 8.6.0
+OpenCV 4.5.4 with CUDA
+But I also see that JetPack is missing.
+I have tried reflashing the Jetson from another Ubuntu machine and installing JetPack 5.1.2, but the problem persists, it is not detected.
+
+The python script confirms that my setup is functional, but my programs is still quite slow and jtop indicates that the GPU isn't being used that much, even in 20W 6CORE mode.
 

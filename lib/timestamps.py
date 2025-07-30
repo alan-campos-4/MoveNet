@@ -20,20 +20,22 @@ def save_performance(filepath, message, fps_array, max_seconds, cap0, cap1=None)
 			f.write(f" - FPS    {cap1.get(5)}\n")
 		
 		f.write(f"{message} during {max_seconds} seconds.\n")
-		for fps in fps_array:
+		for i, fps in enumerate(fps_array):
 			f.write(f"{fps}\n")
-			total += fps
+			if i>=3:
+				total += fps
 		avg = total / len(fps_array)
 		f.write(f"Average FPS = {avg}")
+		print(f"Performance saved to output/timestamps/{filename}.txt")
 
 
-	
+
 def show_text(cv2, frame, seconds_passed, max_seconds, fps):
 	cv2.putText(frame, f'Second = {seconds_passed}/{max_seconds} | FPS = {fps}', (20,40), cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA)
 
 
 
 def get_max_seconds():
-	return 20
+	return 30
 
 
