@@ -35,8 +35,7 @@ if __name__ == '__main__':
     return gpu_resized.download()
     
 	# Load the model from the file
-	interpreter = tf.lite.Interpreter(model_path='models/movenet-thunder.tflite')
-	interpreter.allocate_tensors()
+	model = tf.saved_model.load("movenet/saved_model")
 	
 	# Open both cameras
 	map_l, map_r = get_calibration()
@@ -77,21 +76,13 @@ if __name__ == '__main__':
 				input_image_0 = tf.cast(img0, dtype=tf.float32)
 				input_image_1 = tf.cast(img1, dtype=tf.float32)
 				
-				# Setup input and output
-				input_details_0 =	interpreter.get_input_details()
-				input_details_1	=	interpreter.get_input_details()
-				output_details_0 =	interpreter.get_output_details()
-				output_details_1 =	interpreter.get_output_details()
-				
-				
 				""" 2. Extract the keypoints. """
 				
 				# Make predictions
-				interpreter.set_tensor(input_details_0[0]['index'], np.array(input_image_0))
-				interpreter.set_tensor(input_details_1[0]['index'], np.array(input_image_1))
-				interpreter.invoke()
-				keypoints_0 = interpreter.get_tensor(output_details_0[0]['index'])
-				keypoints_1 = interpreter.get_tensor(output_details_1[0]['index'])
+				outputs_0 = model.signatures["serving_default"](tf.constant(input_image_0))
+				outputs_1 = model.signatures["serving_default"](tf.constant(input_image_1))
+				keypoints_0 = outputs_0["output_0"].numpy()
+				keypoints_1 = outputs_1["output_0"].numpy()
 				
 				
 				""" 3. Create the disparity map from both cameras. """
