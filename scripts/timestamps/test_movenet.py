@@ -16,7 +16,7 @@ Meassures the framerate of a camera while performing calibration and pose estima
 
 
 if __name__ == '__main__':
-	
+
 	# TensorFlow logging
 	tf.debugging.set_log_device_placement(True)
 	

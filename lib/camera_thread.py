@@ -6,8 +6,8 @@ from pipeline import gstreamer_pipeline
 
 
 
-MAX_DISP = 128
-WINDOW_SIZE	= 10
+MAX_DISP = 64
+WINDOW_SIZE	= 5
 
 
 def get_calibration() -> tuple:

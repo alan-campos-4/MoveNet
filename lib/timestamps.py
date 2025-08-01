@@ -37,5 +37,3 @@ def show_text(cv2, frame, seconds_passed, max_seconds, fps):
 
 def get_max_seconds():
 	return 30
-
-
